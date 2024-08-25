@@ -3,8 +3,8 @@ import React from 'react'
 
 const FormField = () => {
   return (
-    <View>
-      <Text>FormField</Text>
+    <View className="space-y-2">
+      <Text className="text-base text-gray-100 font-pmedium">FormField</Text>
     </View>
   )
 }
