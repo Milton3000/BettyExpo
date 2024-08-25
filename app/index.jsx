@@ -11,7 +11,7 @@ export default function App() {
 <ScrollView contentContainerStyle={{ height: '100%'}}>
 <View className="w-full justify-center items-center h-full px-4">
 <Image 
-source={images.logo}
+source={images.bettylogo}
 className="w-[130px] h-[84px]"
 resizeMode="contain"
 />
