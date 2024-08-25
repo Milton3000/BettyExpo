@@ -12,7 +12,7 @@ export default function App() {
     {/* change to 100% later */}
 <View className="w-full justify-center items-center h-full px-4">
 <Image 
-source={images.bettylogo3}
+source={images.bettylogo4}
 className="w-[250px] h-[250px] -top-2"
 resizeMode='contain'
 />
@@ -32,7 +32,7 @@ Discover Endless Sharing with {' '}
 </Text>
 <Image 
 source={images.path}
-className="w-[136px] h-[15px] absolute -bottom-2 -right-8"
+className="w-[136px] h-[15px] absolute -bottom-3 -right-8"
 resizeMode='contain'
 />
 </View>
