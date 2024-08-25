@@ -30,9 +30,15 @@ Discover Endless Possibilities with {' '}
 </Text>
 </Text>
 <Image 
-
+source={images.path}
+className="w-[136px] h-[15px] absolute -bottom-2 -right-8"
+resizeMode='contain'
 />
 </View>
+
+<Text className="text-sm font-pregular text-gray-100 mt-7 text-center">
+    Where creativity meets innovation: embark on a journey of limitless exploration with Betty
+</Text>
 
 </View>
 </ScrollView>
