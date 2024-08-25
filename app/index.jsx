@@ -9,9 +9,9 @@ import CustomButton from '../components/CustomButton';
 export default function App() {
     return (
         <SafeAreaView className="bg-primary h-full">
-<ScrollView contentContainerStyle={{ height: '90%'}}> 
-    {/* change to 100% later */}
-<View className="w-full justify-center items-center h-full px-4">
+<ScrollView contentContainerStyle={{ height: '100%'}}> 
+    {/* can change the VH later down below */}
+<View className="w-full justify-center items-center h-[80vh] px-4">
 <Image 
 source={images.bettylogo4}
 className="w-[250px] h-[250px] -top-2"
