@@ -22,7 +22,17 @@ className="max-w-[380px] w-full h-[300px]"
 resizeMode='contain'
 />
 
+<View className="relative mt-5">
+<Text className="text-3xl text-white font-bold text-center">
+Discover Endless Possibilities with {' '}
+<Text className="text-secondary-200">
+    Betty
+</Text>
+</Text>
+<Image 
 
+/>
+</View>
 
 </View>
 </ScrollView>
