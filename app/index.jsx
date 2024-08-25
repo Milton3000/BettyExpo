@@ -19,7 +19,7 @@ resizeMode='contain'
 
 <Image
 source={images.betty2}
-className="max-w-[350px] w-full h-[270px] -top-12"
+className="max-w-[350px] w-full h-[270px] -top-12 rounded-br-full rounded-l-full"
 resizeMode='contain'
 />
 
