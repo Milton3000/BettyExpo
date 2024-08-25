@@ -15,14 +15,14 @@ const SignIn = () => {
   return (
 <SafeAreaView className="bg-primary h-full">
 <ScrollView>
-  <View className="w-full justify-center h-full px-4">
+  <View className="w-full justify-center h-full px-4 -top-16">
     {/* my-6 and/or min-h-[80vh] for above */}
 <Image 
 source={images.bettylogo4}
 resizeMode="contain"
 className="w-[155px] h-[155px]" />
 
-<Text className="text-2xl text-white text-semibold mt-5 font-psemibold">
+<Text className="text-2xl text-white text-semibold mt-5 font-psemibold -top-10">
   Log in to Betty
 </Text>
 <FormField
