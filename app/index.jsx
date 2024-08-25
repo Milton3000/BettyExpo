@@ -11,3 +11,6 @@ export default function App() {
         </View>
     );
 }
+
+// folders within parenthesis = route group / screens
+// Important to have a separate layout for the Auth screens, since they won't have the same components as the Home Screens. Auth and Onboarding screens should have separate layout
