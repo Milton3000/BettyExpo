@@ -8,20 +8,22 @@ import { images } from "../constants";
 export default function App() {
     return (
         <SafeAreaView className="bg-primary h-full">
-<ScrollView contentContainerStyle={{ height: '100%'}}>
+<ScrollView contentContainerStyle={{ height: '90%'}}> 
+    {/* change to 100% later */}
 <View className="w-full justify-center items-center h-full px-4">
 <Image 
 source={images.bettylogo3}
-className="w-[200px] h-[200px]"
+className="w-[250px] h-[250px] -top-2"
+resizeMode='contain'
 />
 
 <Image
 source={images.betty2}
-className="max-w-[380px] w-full h-[300px] -top-9"
+className="max-w-[350px] w-full h-[270px] -top-12"
 resizeMode='contain'
 />
 
-<View className="relative mt-5 -top-5">
+<View className="relative mt-5 -top-6">
 <Text className="text-3xl text-white font-bold text-center">
 Discover Endless Sharing with {' '}
 <Text className="text-secondary-200">
