@@ -10,7 +10,7 @@ export default function App() {
     return (
         <SafeAreaView className="bg-primary h-full">
 <ScrollView contentContainerStyle={{ height: '100%'}}> 
-    {/* can change the VH later down below */}
+    {/* can change the VH later down below and/or add min-h*/}
 <View className="w-full justify-center items-center h-[80vh] px-4">
 <Image 
 source={images.bettylogo4}
