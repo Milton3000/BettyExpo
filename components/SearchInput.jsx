@@ -12,7 +12,7 @@ const SearchInput = ({ title, value, placeholder, handleChangeText, otherStyles,
             <TextInput
                 className="text-base mt-0.5 text-white flex-1 font-pregular"
                 value={value}
-                placeholder={placeholder}
+                placeholder="Search for an image or video"
                 placeholderTextColor="#7b7b8b"
                 onChangeText={handleChangeText}
                 secureTextEntry={title === 'Password' && !showPassword}
