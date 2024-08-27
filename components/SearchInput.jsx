@@ -7,31 +7,25 @@ const SearchInput = ({ title, value, placeholder, handleChangeText, otherStyles,
 
     const [showPassword, setShowPassword] = useState(false)
     return (
-        <View className={`space-y-2 -top-8 ${otherStyles}`}>
-            <Text className="text-base text-gray-100 font-pmedium">{title}</Text>
+        <View className="border-2 border-black-200 w-full h-16 px-4 bg-black-100 rounded-2xl focus:border-secondary items-center flex-row space-x-4">
 
-            <View className="border-2 border-black-200 w-full h-16 px-4 bg-black-100 rounded-2xl focus:border-secondary items-center flex-row">
+            <TextInput
+                className="text-base mt-0.5 text-white flex-1 font-pregular"
+                value={value}
+                placeholder={placeholder}
+                placeholderTextColor="#7b7b8b"
+                onChangeText={handleChangeText}
+                secureTextEntry={title === 'Password' && !showPassword}
+            // SecureTextEntry = if it is a password, we want to hide it. BeloW: TouchableOpacity is basically a button.
+            />
 
-                <TextInput
-                    className="flex-1 text-white font-psemibold text-base"
-                    value={value}
-                    placeholder={placeholder}
-                    placeholderTextColor="#7b7b8b"
-                    onChangeText={handleChangeText}
-                    secureTextEntry={title === 'Password' && !showPassword}
-                // SecureTextEntry = if it is a password, we want to hide it. BeloW: TouchableOpacity is basically a button.
-                />
-
-                {title === "Password" && (
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                        <Image
-                            source={!showPassword ? icons.eye : icons.eyehide}
-                            className="w-6 h-6" resizeMode="contain"
-                        />
-                    </TouchableOpacity>
-                    // Image: If not showpassword, then it will be icons.eye, else it will be icons.eyehide.
-                )}
-            </View>
+            <TouchableOpacity>
+            <Image
+            source={icons.search}
+            className="w-5 h-5"
+            resizeMode='contain'
+            />
+            </TouchableOpacity>
         </View>
     )
 }
