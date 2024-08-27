@@ -44,11 +44,15 @@ const Home = () => {
             </View>
           </View>
         )}
+        ListEmptyComponent={() => (
+          <Text className="text-white">Empty</Text>
+        )}
       />
     </SafeAreaView>
   )
 }
 
+// SafeAreaView = Scroll View
 // FLatlist is used to Render a lot of elements. Can pass a lot of props.
 // Values: Data = Array of list. keyExtractar = Key of the item. renderItem = explains React Native how we want to render each item in the list. 
 

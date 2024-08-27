@@ -15,4 +15,6 @@ const Trending = ({ posts }) => {
   )
 }
 
+// Since we have vertical scrolling with FlatList + Horizontal, we dont need a SafeAreaView (scroll view)
+
 export default Trending
