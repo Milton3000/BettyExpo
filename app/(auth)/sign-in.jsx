@@ -26,21 +26,26 @@ const SignIn = () => {
     }
     setSubmitting(true);
 
-    try {
-      await signIn(form.email, form.password);
-      const result = await getCurrentUser();
+    
+  try {
+    await signIn(form.email, form.password);
+    const result = await getCurrentUser();
+
+    if (result) {
       setUser(result);
       setIsLogged(true);
-
       Alert.alert("Success", "User signed in successfully");
       router.replace("/home");
-    } catch (error) {
-      Alert.alert("Error", error.message);
-    } finally {
-      setSubmitting(false);
+    } else {
+      throw new Error("Failed to fetch user details after login.");
     }
-  };
-
+  } catch (error) {
+    console.log(error);  // Logs the error to the console
+    Alert.alert("Error", error.message || "Failed to sign in.");
+  } finally {
+    setSubmitting(false);
+  }
+};
   return (
     <SafeAreaView className="bg-primary h-full">
       <ScrollView>

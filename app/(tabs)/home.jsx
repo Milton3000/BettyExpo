@@ -1,13 +1,17 @@
-import { View, Text, FlatList, Image, RefreshControl } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, FlatList, Image, RefreshControl, Alert } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { images } from "../../constants";
 import SearchInput from '../../components/SearchInput';
 import Trending from '../../components/Trending';
 import EmptyState from '../../components/EmptyState';
+import { getAllPosts } from '../../lib/appwrite';
+import useAppwrite from '../../lib/useAppwrite';
 
 const Home = () => {
+const { data: posts } = useAppwrite(getAllPosts);
+
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = async () => {
@@ -15,6 +19,8 @@ const Home = () => {
     // re-call posts or images/videos ... -> if any new content appear
     setRefreshing(false);
   }
+
+  console.log(posts);
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
@@ -36,27 +42,27 @@ const Home = () => {
                 </Text>
               </View>
               <View className="mt-1.5">
-          <Image 
-          source={images.bettylogo4}
-          className="w-9 h-10"
-          resizeMode='contain'
-          />
+                <Image
+                  source={images.bettylogo4}
+                  className="w-9 h-10"
+                  resizeMode='contain'
+                />
               </View>
             </View>
             <SearchInput />
             <View className="w-full flex-1 pt-5 pb-5">
-          <Text className="text-gray-100 text-lg font-pregular mb-3">
-            Latest Videos
-          </Text>
-          <Trending posts={[{ id: 1}, { id: 2 }, {id: 3 }] ?? []} />
+              <Text className="text-gray-100 text-lg font-pregular mb-3">
+                Latest Videos
+              </Text>
+              <Trending posts={[{ id: 1 }, { id: 2 }, { id: 3 }] ?? []} />
             </View>
           </View>
         )}
         ListEmptyComponent={() => (
-        <EmptyState
-        title="No images found"
-        subtitle="Be the first one to upload an image"
-        />
+          <EmptyState
+            title="No images found"
+            subtitle="Be the first one to upload an image"
+          />
         )}
         // This allows us to scroll up to refresh the page for new videos or images, just like instagram.
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
