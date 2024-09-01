@@ -19,14 +19,29 @@ const SignIn = () => {
   })
 
 
-  const submit = async () => {
-
-    if (!form.email === "" || !form.password === "") {
-      Alert.alert("Error", "Please fill in all the fields.")
-    }
-    setSubmitting(true);
-
+const submit = async () => {
+  try {
+    // Check if there's an active session
+    const currentAccount = await getAccount();
     
+    if (currentAccount) {
+      // Session is active, redirect to home screen
+      setUser(currentAccount);
+      setIsLogged(true);
+      Alert.alert("Success", "User is already logged in.");
+      router.replace("/home");
+      return;  // Exit early if session is already active
+    }
+  } catch (error) {
+    // Ignore the error since this might mean no session is active, continue to login
+  }
+
+  if (form.email === "" || form.password === "") {
+    Alert.alert("Error", "Please fill in all the fields.");
+    return;  // Prevent further execution if fields are empty
+  }
+
+  setSubmitting(true);
   try {
     await signIn(form.email, form.password);
     const result = await getCurrentUser();
@@ -46,6 +61,7 @@ const SignIn = () => {
     setSubmitting(false);
   }
 };
+
   return (
     <SafeAreaView className="bg-primary h-full">
       <ScrollView>
