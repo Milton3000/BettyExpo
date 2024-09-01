@@ -6,7 +6,7 @@ import { images } from "../../constants";
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
-import { getCurrentUser, signIn } from '../../lib/appwrite';
+import { getCurrentUser, signIn, checkActiveSession, deleteSessions } from '../../lib/appwrite';
 import { useGlobalContext } from "../../context/GlobalProvider";
 
 const SignIn = () => {
@@ -19,49 +19,38 @@ const SignIn = () => {
   })
 
 
-const submit = async () => {
-  try {
-    // Check if there's an active session
-    const currentAccount = await getAccount();
-    
-    if (currentAccount) {
-      // Session is active, redirect to home screen
-      setUser(currentAccount);
-      setIsLogged(true);
-      Alert.alert("Success", "User is already logged in.");
-      router.replace("/home");
-      return;  // Exit early if session is already active
+  const submit = async () => {
+    if (form.email === "" || form.password === "") {
+      Alert.alert("Error", "Please fill in all fields");
+      return; // Exit early if validation fails
     }
-  } catch (error) {
-    // Ignore the error since this might mean no session is active, continue to login
-  }
+  
+    setSubmitting(true);
 
-  if (form.email === "" || form.password === "") {
-    Alert.alert("Error", "Please fill in all the fields.");
-    return;  // Prevent further execution if fields are empty
-  }
+    try {
+      // Check for an active session
+      const activeSession = await checkActiveSession();
 
-  setSubmitting(true);
-  try {
-    await signIn(form.email, form.password);
-    const result = await getCurrentUser();
-
-    if (result) {
+      if (activeSession) {
+        // Delete the active sessions if one exists
+        await deleteSessions();
+      }
+  
+      // Proceed with sign-in
+      await signIn(form.email, form.password);
+      const result = await getCurrentUser();
       setUser(result);
       setIsLogged(true);
+  
       Alert.alert("Success", "User signed in successfully");
       router.replace("/home");
-    } else {
-      throw new Error("Failed to fetch user details after login.");
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setSubmitting(false);
     }
-  } catch (error) {
-    console.log(error);  // Logs the error to the console
-    Alert.alert("Error", error.message || "Failed to sign in.");
-  } finally {
-    setSubmitting(false);
-  }
-};
-
+  };
+  
   return (
     <SafeAreaView className="bg-primary h-full">
       <ScrollView>
