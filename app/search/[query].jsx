@@ -15,7 +15,7 @@ const Search = () => {
     () => searchPosts(query)
   );
 
-  console.log(query, posts)
+  // console.log(query, posts)
 
   const { data: images, refetch: refetchImages } = useAppwrite(
     () => searchImages(query)
