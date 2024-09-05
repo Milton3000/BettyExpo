@@ -1,12 +1,12 @@
-import { View, Text, FlatList, Image, RefreshControl, Alert } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, FlatList, } from 'react-native'
+import React, { useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-// import { images } from "../../constants";
+import ImageCard from '../../components/ImageCard'; // ImageCard
+import VideoCard from '../../components/VideoCard';
 import SearchInput from '../../components/SearchInput';
 import EmptyState from '../../components/EmptyState';
-import { searchPosts } from '../../lib/appwrite';
+import { searchPosts, searchImages, videoCollectionId, imageCollectionId } from '../../lib/appwrite';
 import useAppwrite from '../../lib/useAppwrite';
-import VideoCard from '../../components/VideoCard';
 import { useLocalSearchParams } from 'expo-router';
 
 const Search = () => {
@@ -17,19 +17,33 @@ const Search = () => {
 
   console.log(query, posts)
 
+  const { data: images, refetch: refetchImages } = useAppwrite(
+    () => searchImages(query)
+  );
+
   useEffect(() => {
     refetch()
-  }, [query])
+  }, [query]);
+
+  useEffect(() => {
+    refetchImages(); // Fetch images
+  }, [query]);
+
+  const combinedResults = [...(posts || []), ...(images || [])];
 
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
-        data={posts}
+        data={combinedResults} // Use combined results
         keyExtractor={(item) => item.$id}
-        renderItem={({ item }) => (
-          <VideoCard video={item} />
-          // Add an ImageCard item here too? 
-        )}
+        renderItem={({ item }) => {
+          if (item.collectionId === videoCollectionId) {
+            return <VideoCard video={item} />;
+          } else if (item.collectionId === imageCollectionId) {
+            return <ImageCard image={item} />;
+          }
+          return null; // Handle other cases or ignore them
+        }}
         ListHeaderComponent={() => (
           <View className="my-6 px-4">
             <Text className="font-pmedium text-sm text-gray-100">
