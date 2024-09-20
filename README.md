@@ -8,7 +8,7 @@ LINKA TILL EXPO FRÅN TERMINALEN (?):
 
 npm install --global eas-cli && eas init --id 00624e9d-3ae8-40ff-a204-73350c1d9d91
 
-
+npm install expo-document-picker (för uppladdning)
 
 appwrite.js:
 
