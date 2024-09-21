@@ -4,12 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import FormField from '../../components/FormField'
 import CustomButton from '../../components/CustomButton'
 import { Video, ResizeMode } from 'expo-av'
-import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { icons } from '../../constants'
 import { router } from 'expo-router'
+import { createVideo } from '../../lib/appwrite'
+import { useGlobalContext } from '../../context/GlobalProvider';
 
 const Create = () => {
-
+  const { user } = useGlobalContext();
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -18,11 +20,12 @@ const Create = () => {
   })
 
   const openPicker = async (selectType) => {
-    const result = await DocumentPicker.getDocumentAsync
-    ({
-      type: selectType === 'image' ? ['image/png', 'image/jpg']
-      : ['video/mp4', 'video/gif']
-    })
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: selectType === 'image' ? ImagePicker.MediaTypeOptions.Images : ImagePicker.MediaTypeOptions.Videos,
+      // allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
     if(!result.canceled) {
       if(selectType === 'image') {
@@ -39,30 +42,36 @@ const Create = () => {
   }
   
 
-  const submit = () => {
-    if(!form.title || !form.thumbnail || !form.video) {
-      return Alert.alert("Please fill in all the fields")
+  const submit = async () => {
+    if (
+      (form.title === "") |
+      !form.thumbnail |
+      !form.video
+    ) {
+      return Alert.alert("Please provide all fields");
     }
 
-    setUploading(true)
-
+    setUploading(true);
     try {
-      
+      await createVideo({
+        ...form,
+        userId: user.$id,
+      });
 
-      Alert.alert("Success", "Post uploaded successfully")
-      router.push("/home")
+      Alert.alert("Success", "Post uploaded successfully");
+      router.push("/home");
     } catch (error) {
-      Alert.alert("Error", error.message)
+      Alert.alert("Error", error.message);
     } finally {
       setForm({
         title: "",
         video: null,
-        thumbnail: null
-      })
+        thumbnail: null,
+      });
 
       setUploading(false);
     }
-  }
+  };
 
   return (
     <SafeAreaView className="bg-primary h-full">
@@ -74,7 +83,7 @@ const Create = () => {
           title="Title"
           value={form.title}
           placeholder="Provide a title ..."
-          handleChangeText={() => setForm({ ...form, title: e })}
+          handleChangeText={(e) => setForm({ ...form, title: e })}
           otherStyles="mt-10"
         />
         <View className="mt-7 space-y-2">
