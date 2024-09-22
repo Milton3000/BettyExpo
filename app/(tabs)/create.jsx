@@ -130,16 +130,7 @@ const Create = () => {
             )}
           </TouchableOpacity>
         </View>
-
-{/* AI PROMPT - DON'T NEED */}
-        {/* <FormField
-          title="AI Prompt"
-          value={form.prompt}
-          placeholder="The prompt you used to create this video"
-          handleChangeText={() => setForm({ ...form, prompt: e })}
-          otherStyles="mt-7"
-        /> */}
-
+        
         <CustomButton 
         title="Submit & Publish"
         handlePress={submit}

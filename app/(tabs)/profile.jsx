@@ -61,8 +61,8 @@ const Profile = () => {
                 titleStyles="text-xl"
               />
               <InfoBox
-                title="1.2k" // KAN SKIPPA FOLLOWERS SEN
-                subtitle="Followers"
+                title="2" // KAN SKIPPA FOLLOWERS SEN
+                subtitle="Galleries"
                 titleStyles="text-xl"
               />
             </View>
