@@ -1,18 +1,24 @@
-import { View, Text, FlatList, Image, RefreshControl, Alert } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, FlatList, Image, RefreshControl } from 'react-native'
+import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { images } from "../../constants";
 import SearchInput from '../../components/SearchInput';
 import Trending from '../../components/Trending';
 import EmptyState from '../../components/EmptyState';
-import { getAllPosts, getLatestPosts } from '../../lib/appwrite';
+import { 
+  getAllPosts, 
+  getLatestPosts, 
+  videoCollectionId, 
+  imageCollectionId 
+} from '../../lib/appwrite';
 import useAppwrite from '../../lib/useAppwrite';
 import VideoCard from '../../components/VideoCard';
+import ImageCard from '../../components/ImageCard';
 import { useGlobalContext } from '../../context/GlobalProvider';
 
 const Home = () => {
-  const { user, setUser, setIsLogged } = useGlobalContext();
+  const { user } = useGlobalContext();
   const { data: posts, refetch } = useAppwrite(getAllPosts);
   const { data: latestPosts } = useAppwrite(getLatestPosts);
   const [refreshing, setRefreshing] = useState(false);
@@ -20,19 +26,24 @@ const Home = () => {
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
-    // re-call posts or images/videos ... -> if any new content appear
     setRefreshing(false);
   }
 
-  // console.log(posts);
+  const renderItem = ({ item }) => {
+    if (item.collectionId === videoCollectionId) {
+      return <VideoCard video={item} />;
+    } else if (item.collectionId === imageCollectionId) {
+      return <ImageCard image={item} />;
+    }
+    return null;
+  };
+
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
         data={posts}
         keyExtractor={(item) => item.$id}
-        renderItem={({ item }) => (
-<VideoCard video={item} />
-        )}
+        renderItem={renderItem}
         ListHeaderComponent={() => (
           <View className="my-6 px-4 space-y-1">
             <View className="justify-between items-start flew-row mb-6">
@@ -55,7 +66,7 @@ const Home = () => {
             <SearchInput />
             <View className="w-full flex-1 pt-5 pb-5">
               <Text className="text-gray-100 text-lg font-pregular mb-3">
-                Gallery Preview (change to galleries)
+                Gallery Preview
               </Text>
               <Trending posts={latestPosts ?? []} />
             </View>
@@ -63,19 +74,17 @@ const Home = () => {
         )}
         ListEmptyComponent={() => (
           <EmptyState
-            title="No images found"
-            subtitle="Be the first one to upload an image"
+            title="No posts found"
+            subtitle="Be the first one to upload a post"
           />
         )}
-        // This allows us to scroll up to refresh the page for new videos or images, just like instagram.
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       />
     </SafeAreaView>
   )
 }
 
+export default Home
 // SafeAreaView = Scroll View
 // FLatlist is used to Render a lot of elements. Can pass a lot of props.
 // Values: Data = Array of list. keyExtractar = Key of the item. renderItem = explains React Native how we want to render each item in the list. 
-
-export default Home
