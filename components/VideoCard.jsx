@@ -19,13 +19,13 @@ const VideoCard = ({ video: { title, thumbnail, video, creator: { username, avat
           </View>
 
           <View className="justify-center flex-1 ml-3 gap-y-1">
-            <Text className="text-white font-psemibold text-sm" numberOfLines={1}>
-              {title}
-              <Text className="text-xs text-gray-100 font-pregular" numberOfLines={1}>
-                {username}
-              </Text>
-            </Text>
-          </View>
+  <Text className="text-white font-psemibold text-sm" numberOfLines={1}>
+    {title}
+  </Text>
+  <Text className="text-xs text-gray-100 font-pregular mt-1" numberOfLines={1}>
+    {username}
+  </Text>
+</View>
         </View>
         <View className="pt-2">
           <Image source={icons.menu} className="w-5 h-5"
