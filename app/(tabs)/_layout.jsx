@@ -1,5 +1,5 @@
 import { View, Text, Image } from 'react-native'
-import { Tabs, Redirect } from "expo-router";
+import { Tabs } from "expo-router";
 
 import { icons } from "../../constants";
 
@@ -16,13 +16,12 @@ const TabIcon = ({ icon, color, name, focused }) => {
         {name}
       </Text>
     </View>
-  )
+  );
 }
 
 const TabsLayout = () => {
   return (
-    <>
-      <Tabs
+    <Tabs
       screenOptions={{
         tabBarShowLabel: false,
         tabBarActiveTintColor: "#FFA001",
@@ -32,62 +31,63 @@ const TabsLayout = () => {
           borderTopWidth: 1,
           borderTopColor: "#232533",
           height: 84,
-        }
-      }}>
-        <Tabs.Screen name="home" options={{
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="home"
+        options={{
           title: "Home",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              icon={icons.home}
-              color={color}
-              name="Home"
-              focused={focused}
-            />
-          )
-        }} />
-                <Tabs.Screen name="galleries" options={{
+            <TabIcon icon={icons.home} color={color} name="Home" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="galleries/index"
+        options={{
           title: "Galleries",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              icon={icons.bookmark}
-              color={color}
-              name="Galleries"
-              focused={focused}
-            />
-          )
-        }} />
-                <Tabs.Screen name="create" options={{
+            <TabIcon icon={icons.bookmark} color={color} name="Galleries" focused={focused} />
+          ),
+        }}
+      />
+            {/* <Tabs.Screen
+        name="galleries/[galleryId]"
+        options={{
+          title: "Image Library",
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon icon={icons.bookmark} color={color} name="Library" focused={focused} />
+          ),
+        }}
+      /> */}
+      <Tabs.Screen
+        name="create"
+        options={{
           title: "Create",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              icon={icons.plus}
-              color={color}
-              name="Create"
-              focused={focused}
-            />
-          )
-        }} />
-                <Tabs.Screen name="profile" options={{
+            <TabIcon icon={icons.plus} color={color} name="Create" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
           title: "Profile",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              icon={icons.profile}
-              color={color}
-              name="Profile"
-              focused={focused}
-            />
-          )
-        }} />
-      </Tabs>
-    </>
-  )
-}
+            <TabIcon icon={icons.profile} color={color} name="Profile" focused={focused} />
+          ),
+        }}
+      />
+    </Tabs>
+  );
+};
 
-export default TabsLayout
-
+export default TabsLayout;
 
 // Allows us to switch with all the pages 
