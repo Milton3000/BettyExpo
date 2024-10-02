@@ -13,7 +13,7 @@ const Galleries = () => {
     const fetchGalleries = async () => {
       try {
         const latestGalleries = await getLatestGalleries();
-        console.log(latestGalleries); // This logs the correct gallery data
+        // console.log(latestGalleries); // This logs the correct gallery data
         setGalleries(latestGalleries);
       } catch (error) {
         console.error("Error fetching galleries:", error);

@@ -4,9 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator'; // Added for image compression
 import { icons } from '../../constants';
 import { router } from 'expo-router';
-import { createGallery } from '../../lib/appwrite'; // Updated to createGallery
+import { createGallery } from '../../lib/appwrite'; 
 import { useGlobalContext } from '../../context/GlobalProvider';
 
 const CreateGallery = () => {
@@ -15,21 +16,39 @@ const CreateGallery = () => {
   const [form, setForm] = useState({
     galleryTitle: "",
     thumbnail: null,
-    assets: [], // Store multiple assets
-    assetType: null, // Track type (image or video)
+    assets: [],
+    assetType: null,
   });
+
+  // Compress image using ImageManipulator
+  const compressImage = async (uri) => {
+    const compressedImage = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 1080 } }],  // Resize to max width of 1080px
+      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+    );
+    return compressedImage;
+  };
 
   const openPicker = async (selectType) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: selectType === 'image' ? ImagePicker.MediaTypeOptions.Images : ImagePicker.MediaTypeOptions.Videos,
-      allowsMultipleSelection: true, // Allow multiple selection
+      allowsMultipleSelection: true,
       quality: 1,
     });
 
     if (!result.canceled) {
+      const compressedAssets = await Promise.all(result.assets.map(async (asset) => {
+        if (selectType === 'image') {
+          const compressedImage = await compressImage(asset.uri);
+          return { ...compressedImage, mimeType: asset.mimeType };
+        }
+        return asset; // For videos, add your compression logic if needed.
+      }));
+
       setForm({
         ...form,
-        assets: result.assets, // Save multiple assets
+        assets: compressedAssets,
         assetType: selectType,
       });
     } else {
@@ -44,19 +63,21 @@ const CreateGallery = () => {
     });
 
     if (!result.canceled) {
+      const compressedThumbnail = await compressImage(result.assets[0].uri); // Compress thumbnail
       setForm({
         ...form,
-        thumbnail: result.assets[0],
+        thumbnail: compressedThumbnail,
       });
     } else {
       Alert.alert('No thumbnail selected');
     }
   };
+
   const submit = async () => {
     if (form.galleryTitle === "" || !form.thumbnail || form.assets.length === 0) {
       return Alert.alert("Please provide all required fields");
     }
-  
+
     setUploading(true);
     try {
       const newGallery = await createGallery({
@@ -64,9 +85,9 @@ const CreateGallery = () => {
         thumbnail: form.thumbnail,
         assets: form.assets,
         assetType: form.assetType,
-        userId: user.$id, // Pass the user's ID directly
+        userId: user.$id,
       });
-  
+
       Alert.alert("Success", "Gallery created successfully");
       router.push("/home");
     } catch (error) {
@@ -81,8 +102,6 @@ const CreateGallery = () => {
       setUploading(false);
     }
   };
-  
-  
 
   return (
     <SafeAreaView className="bg-primary h-full">

@@ -54,7 +54,7 @@ const TabsLayout = () => {
           ),
         }}
       />
-            {/* <Tabs.Screen
+            <Tabs.Screen
         name="galleries/[galleryId]"
         options={{
           title: "Image Library",
@@ -63,7 +63,7 @@ const TabsLayout = () => {
             <TabIcon icon={icons.bookmark} color={color} name="Library" focused={focused} />
           ),
         }}
-      /> */}
+      />
       <Tabs.Screen
         name="create"
         options={{
