@@ -169,7 +169,7 @@ const GalleryDetails = () => {
               <TouchableOpacity onPress={() => handleImagePress(index)}>
                 <Image
                   source={{ uri: item }}
-                  style={{ width: screenWidth / 3 - 10, height: screenWidth / 3 - 10, margin: 5, borderRadius: 10 }}
+                  style={{ width: screenWidth / 3 - 18, height: screenWidth / 3 - 15, margin: 5, borderRadius: 10 }}
                   resizeMode="cover"
                 />
               </TouchableOpacity>
@@ -191,9 +191,9 @@ const GalleryDetails = () => {
         </View>
       )}
 
-      <View style={{ paddingHorizontal: 16, marginTop: 24 }}>
-        <Text style={{ fontSize: 20, color: 'white', textAlign: 'center' }}>Add More Media</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 }}>
+      <View style={{ paddingHorizontal: 30, marginTop: 10 }}>
+        {/* <Text style={{ fontSize: 20, color: 'white', textAlign: 'center' }}>Add More Media</Text> */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <TouchableOpacity onPress={() => openPicker('image')}>
             <Text style={{ color: 'white', fontSize: 18 }}>Upload Images</Text>
           </TouchableOpacity>
@@ -225,7 +225,7 @@ const GalleryDetails = () => {
               {galleryData.images[selectedImageIndex] && (
                 <Animated.Image
                   source={{ uri: galleryData.images[selectedImageIndex] }}
-                  style={[{ width: imageModalSize, height: imageModalSize, borderRadius: 20, borderWidth: 2, borderColor: 'white' }, animatedStyle]}
+                  style={[{ width: imageModalSize, height: imageModalSize, borderRadius: 20 }, animatedStyle]}
                   resizeMode="cover"
                 />
               )}
