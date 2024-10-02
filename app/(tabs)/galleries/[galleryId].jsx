@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
+import * as ImageManipulator from 'expo-image-manipulator'; // Import ImageManipulator for compression
 import { Feather } from '@expo/vector-icons';
 import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
@@ -65,7 +66,20 @@ const GalleryDetails = () => {
 
     try {
       const mediaUrls = await Promise.all(newMedia.map(async (media) => {
-        const fileUrl = await uploadFile(media, media.mimeType);
+        let fileUri = media.uri;
+
+        // Compress image if mediaType is 'image'
+        if (mediaType === 'image') {
+          const compressedImage = await ImageManipulator.manipulateAsync(
+            media.uri,
+            [{ resize: { width: 1000 } }], // Resize to 1000px width
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
+          );
+          fileUri = compressedImage.uri;
+        }
+
+        // Use the original upload logic
+        const fileUrl = await uploadFile({ ...media, uri: fileUri }, media.mimeType);
 
         if (!fileUrl) {
           throw new Error('File upload failed: No file URL returned');
@@ -74,6 +88,7 @@ const GalleryDetails = () => {
         return fileUrl;
       }));
 
+      // Update the gallery with media URLs
       if (mediaType === 'image') {
         await addImagesToGallery(galleryId, mediaUrls);
       } else {
@@ -82,8 +97,8 @@ const GalleryDetails = () => {
 
       Alert.alert('Success', 'Media uploaded successfully!');
 
+      // Fetch the updated gallery data
       const updatedGallery = await databases.getDocument(config.databaseId, config.galleriesCollectionId, galleryId);
-
       setGalleryData(updatedGallery);
     } catch (error) {
       console.error('Error uploading media:', error.message || error);
@@ -192,7 +207,6 @@ const GalleryDetails = () => {
       )}
 
       <View style={{ paddingHorizontal: 30, marginTop: 10 }}>
-        {/* <Text style={{ fontSize: 20, color: 'white', textAlign: 'center' }}>Add More Media</Text> */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <TouchableOpacity onPress={() => openPicker('image')}>
             <Text style={{ color: 'white', fontSize: 18 }}>Upload Images</Text>
