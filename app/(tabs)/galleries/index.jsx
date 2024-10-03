@@ -38,24 +38,32 @@ const Galleries = () => {
       <FlatList
         data={galleries}
         keyExtractor={(item) => item.$id}
+        numColumns={2}  // Set to 2 columns for a grid layout
+        key={'_'}  // Force a re-render when columns change
+        columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 10 }}  // Styling for grid columns
         renderItem={({ item }) => {
           const title = item?.title || "Untitled";
           const thumbnail = item?.thumbnail || null;
 
           return (
-            <TouchableOpacity onPress={() => handleGalleryPress(item)}>
-              <View style={{ backgroundColor: 'white', shadowColor: 'black', shadowOpacity: 0.5, borderRadius: 10, padding: 16, marginBottom: 16 }}>
+            <TouchableOpacity
+              onPress={() => handleGalleryPress(item)}
+              style={{ flex: 1, marginBottom: 16, marginHorizontal: 5 }} // Flex for even distribution in grid
+            >
+              <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 10, shadowColor: 'black', shadowOpacity: 0.3, shadowRadius: 5 }}>
                 {/* Render title above thumbnail */}
-                <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>{title}</Text>
-                
+                <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center' }}>
+                  {title}
+                </Text>
+
                 {thumbnail ? (
                   <Image
                     source={{ uri: thumbnail }}
-                    style={{ width: '100%', height: 200, borderRadius: 10 }}
+                    style={{ width: '100%', height: 150, borderRadius: 10 }}
                     resizeMode="cover"
                   />
                 ) : (
-                  <Text>No Thumbnail Available</Text>
+                  <Text style={{ textAlign: 'center' }}>No Thumbnail Available</Text>
                 )}
               </View>
             </TouchableOpacity>
