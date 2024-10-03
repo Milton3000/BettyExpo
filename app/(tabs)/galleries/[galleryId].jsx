@@ -43,6 +43,16 @@ const GalleryDetails = () => {
     if (galleryId) fetchGallery();
   }, [galleryId]);
 
+  // Helper function to format the event date
+  const formatEventDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   const openPicker = async (selectType) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: selectType === 'image' ? ImagePicker.MediaTypeOptions.Images : ImagePicker.MediaTypeOptions.Videos,
@@ -62,13 +72,13 @@ const GalleryDetails = () => {
     if (newMedia.length === 0) {
       return Alert.alert('No media selected to upload.');
     }
-  
+
     setUploading(true);
-  
+
     try {
       const mediaUrls = await Promise.all(newMedia.map(async (media) => {
         let fileUri = media.uri;
-  
+
         // Compress image if mediaType is 'image'
         if (mediaType === 'image') {
           const compressedImage = await ImageManipulator.manipulateAsync(
@@ -76,35 +86,35 @@ const GalleryDetails = () => {
             [{ resize: { width: 1000 } }], // Resize to 1000px width
             { compress: 0.9, format: ImageManipulator.SaveFormat.JPEG } // Compress to 90% quality
           );
-          
+
           // Check if compressed image file size is acceptable
           const fileInfo = await FileSystem.getInfoAsync(compressedImage.uri);
           if (fileInfo.size < 10000) { // Check if file size is smaller than 10KB
             throw new Error('File is too small to upload.');
           }
-  
+
           fileUri = compressedImage.uri;
         }
-  
+
         // Use the original upload logic
         const fileUrl = await uploadFile({ ...media, uri: fileUri }, media.mimeType);
-  
+
         if (!fileUrl) {
           throw new Error('File upload failed: No file URL returned');
         }
-  
+
         return fileUrl;
       }));
-  
+
       // Update the gallery with media URLs
       if (mediaType === 'image') {
         await addImagesToGallery(galleryId, mediaUrls);
       } else {
         await addVideosToGallery(galleryId, mediaUrls);
       }
-  
+
       Alert.alert('Success', 'Media uploaded successfully!');
-  
+
       // Fetch the updated gallery data
       const updatedGallery = await databases.getDocument(config.databaseId, config.galleriesCollectionId, galleryId);
       setGalleryData(updatedGallery);
@@ -116,7 +126,6 @@ const GalleryDetails = () => {
       setNewMedia([]);
     }
   };
-  
 
   const handleImagePress = (index) => {
     setSelectedImageIndex(index); // Ensure we pick the correct image index
@@ -185,7 +194,7 @@ const GalleryDetails = () => {
   if (loading) return <Text>Loading...</Text>;
   if (!galleryData) return <Text>No gallery found</Text>;
 
-  const { title, images = [], videos = [] } = galleryData;
+  const { title, images = [], videos = [], eventDate } = galleryData;
 
   return (
     <SafeAreaView className="bg-primary h-full">
@@ -198,6 +207,13 @@ const GalleryDetails = () => {
           <Feather name="settings" size={24} color="white" />
         </TouchableOpacity>
       </View>
+
+      {/* Render the event date */}
+      {eventDate && (
+        <Text style={{ color: 'gray', textAlign: 'center', marginTop: 8 }}>
+          Created on: {formatEventDate(eventDate)}
+        </Text>
+      )}
 
       {images.length > 0 && (
         <View style={{ paddingHorizontal: 16, marginTop: 24 }}>
