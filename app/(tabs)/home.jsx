@@ -8,28 +8,38 @@ import Trending from '../../components/Trending';
 import EmptyState from '../../components/EmptyState';
 import { getAllPosts, getLatestGalleries } from '../../lib/appwrite';
 import useAppwrite from '../../lib/useAppwrite';
-import GalleryCard from '../../components/GalleryCard'; // Assuming you have a GalleryCard component
+import GalleryCard from '../../components/GalleryCard';
 import { useGlobalContext } from '../../context/GlobalProvider';
 
 const Home = () => {
   const { user } = useGlobalContext();
-  const { data: posts, refetch } = useAppwrite(getAllPosts);
-  const { data: latestGalleries } = useAppwrite(getLatestGalleries); // Fetch galleries instead of latest posts
+  const { data: posts, refetch: refetchPosts } = useAppwrite(getAllPosts);
+  const [latestGalleries, setLatestGalleries] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Fetch the latest galleries
+  const fetchGalleries = async () => {
+    try {
+      const galleries = await getLatestGalleries();
+      setLatestGalleries(galleries);
+    } catch (error) {
+      console.error('Error fetching latest galleries:', error);
+    }
+  };
+
   useEffect(() => {
-    // console.log('Latest galleries:', latestGalleries);
-  }, [latestGalleries]);
+    fetchGalleries(); // Fetch galleries on component mount
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await refetchPosts(); // Refresh posts
+    await fetchGalleries(); // Refresh galleries
     setRefreshing(false);
-  }
+  };
 
   const renderItem = ({ item }) => {
-    // console.log('Rendering item:', item); // Log gallery item data
-    return <GalleryCard gallery={item} />; // Assuming GalleryCard is used to render galleries
+    return <GalleryCard gallery={item} />;
   };
 
   return (
@@ -42,6 +52,7 @@ const Home = () => {
           <View className="my-6 px-4 space-y-1">
             <View className="justify-between items-start flex-row mb-6">
               <View>
+                {/* Wrap all text content in <Text> */}
                 <Text className="font-pmedium text-sm text-gray-100">
                   Welcome Back,
                 </Text>
@@ -53,7 +64,7 @@ const Home = () => {
                 <Image
                   source={images.bettylogo4}
                   className="w-9 h-10"
-                  resizeMode='contain'
+                  resizeMode="contain"
                 />
               </View>
             </View>
@@ -62,8 +73,8 @@ const Home = () => {
               <Text className="text-gray-100 text-lg font-bold mb-3">
                 Gallery Preview
               </Text>
-              {/* Trending component now receives galleries */}
-              <Trending posts={latestGalleries ?? []} />
+              {/* Pass latest galleries to Trending */}
+              <Trending posts={latestGalleries} />
             </View>
           </View>
         )}
@@ -77,7 +88,7 @@ const Home = () => {
       />
     </SafeAreaView>
   );
-}
+};
 
 export default Home;
 

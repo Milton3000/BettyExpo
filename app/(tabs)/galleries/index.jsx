@@ -1,26 +1,29 @@
 import { View, FlatList, TouchableOpacity, Image, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getLatestGalleries } from '../../../lib/appwrite';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';  // Import useFocusEffect
 import InfoBox from '../../../components/InfoBox';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';  // Import useCallback for useFocusEffect
 
 const Galleries = () => {
   const [galleries, setGalleries] = useState([]);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchGalleries = async () => {
-      try {
-        const latestGalleries = await getLatestGalleries();
-        // console.log(latestGalleries); // This logs the correct gallery data
-        setGalleries(latestGalleries);
-      } catch (error) {
-        console.error("Error fetching galleries:", error);
-      }
-    };
-    fetchGalleries();
-  }, []);
+  // Refetch galleries when the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const fetchGalleries = async () => {
+        try {
+          const latestGalleries = await getLatestGalleries();
+          setGalleries(latestGalleries);  // Update the galleries list
+        } catch (error) {
+          console.error("Error fetching galleries:", error);
+        }
+      };
+
+      fetchGalleries(); // Fetch galleries when returning to this screen
+    }, [])  // Empty dependency array ensures this runs every time the screen is focused
+  );
 
   const handleGalleryPress = (gallery) => {
     router.push(`/galleries/${gallery.$id}`);
@@ -28,9 +31,9 @@ const Galleries = () => {
 
   return (
     <SafeAreaView className="bg-primary h-full">
-<Text className="text-gray-100 text-xl font-bold mb-5 mt-5 text-center">
-  Galleries
-</Text>
+      <Text className="text-gray-100 text-xl font-bold mb-5 mt-5 text-center">
+        Galleries
+      </Text>
 
       <FlatList
         data={galleries}

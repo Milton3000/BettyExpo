@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, FlatList, Image, Text, TouchableOpacity, Dimensions, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { databases, config, addImagesToGallery, addVideosToGallery, uploadFile } from '../../../lib/appwrite';
+import { databases, config, addImagesToGallery, addVideosToGallery, uploadFile, deleteGallery } from '../../../lib/appwrite'; // Import deleteGallery
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -21,6 +21,7 @@ const GalleryDetails = () => {
   const [mediaType, setMediaType] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0); // Track the selected image
   const [modalVisible, setModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false); // State for delete modal
 
   // Reanimated Shared Value for swipe animations
   const translateX = useSharedValue(0);
@@ -61,53 +62,61 @@ const GalleryDetails = () => {
     if (newMedia.length === 0) {
       return Alert.alert('No media selected to upload.');
     }
-
+  
     setUploading(true);
-
+  
     try {
       const mediaUrls = await Promise.all(newMedia.map(async (media) => {
         let fileUri = media.uri;
-
+  
         // Compress image if mediaType is 'image'
         if (mediaType === 'image') {
           const compressedImage = await ImageManipulator.manipulateAsync(
             media.uri,
             [{ resize: { width: 1000 } }], // Resize to 1000px width
-            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
+            { compress: 0.9, format: ImageManipulator.SaveFormat.JPEG } // Compress to 90% quality
           );
+          
+          // Check if compressed image file size is acceptable
+          const fileInfo = await FileSystem.getInfoAsync(compressedImage.uri);
+          if (fileInfo.size < 10000) { // Check if file size is smaller than 10KB
+            throw new Error('File is too small to upload.');
+          }
+  
           fileUri = compressedImage.uri;
         }
-
+  
         // Use the original upload logic
         const fileUrl = await uploadFile({ ...media, uri: fileUri }, media.mimeType);
-
+  
         if (!fileUrl) {
           throw new Error('File upload failed: No file URL returned');
         }
-
+  
         return fileUrl;
       }));
-
+  
       // Update the gallery with media URLs
       if (mediaType === 'image') {
         await addImagesToGallery(galleryId, mediaUrls);
       } else {
         await addVideosToGallery(galleryId, mediaUrls);
       }
-
+  
       Alert.alert('Success', 'Media uploaded successfully!');
-
+  
       // Fetch the updated gallery data
       const updatedGallery = await databases.getDocument(config.databaseId, config.galleriesCollectionId, galleryId);
       setGalleryData(updatedGallery);
     } catch (error) {
       console.error('Error uploading media:', error.message || error);
-      Alert.alert('Error', 'Failed to upload media.');
+      Alert.alert('Error', error.message || 'Failed to upload media.');
     } finally {
       setUploading(false);
       setNewMedia([]);
     }
   };
+  
 
   const handleImagePress = (index) => {
     setSelectedImageIndex(index); // Ensure we pick the correct image index
@@ -152,6 +161,23 @@ const GalleryDetails = () => {
     }
   };
 
+  // Handle deleting the gallery and associated media
+  const handleDeleteGallery = async () => {
+    try {
+      // Call the deleteGallery function from appwrite
+      await deleteGallery(config.galleriesCollectionId, galleryId, galleryData.images, galleryData.videos);
+      Alert.alert('Success', 'Gallery deleted successfully!');
+
+      // Automatically close the delete modal
+      setDeleteModalVisible(false);
+
+      // Navigate back to the galleries list after deletion
+      router.push('/galleries');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to delete gallery.');
+    }
+  };
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
@@ -168,7 +194,7 @@ const GalleryDetails = () => {
           <Feather name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
         <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', flex: 1 }}>{title}</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setDeleteModalVisible(true)}>
           <Feather name="settings" size={24} color="white" />
         </TouchableOpacity>
       </View>
@@ -222,6 +248,22 @@ const GalleryDetails = () => {
           <Text style={{ color: 'white', textAlign: 'center' }}>{uploading ? 'Uploading...' : 'Upload Media'}</Text>
         </TouchableOpacity>
       )}
+
+      {/* Modal for delete confirmation */}
+      <Modal visible={deleteModalVisible} transparent={true} animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+          <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' }}>Confirm Delete</Text>
+            <Text style={{ marginBottom: 20, textAlign: 'center' }}>Are you sure you want to delete this gallery? This action cannot be undone.</Text>
+            <TouchableOpacity onPress={handleDeleteGallery} style={{ padding: 10, backgroundColor: 'red', borderRadius: 5 }}>
+              <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={{ marginTop: 10 }}>
+              <Text style={{ textAlign: 'center', color: 'blue' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <GestureHandlerRootView>
         <Modal visible={modalVisible} transparent={true} animationType="slide">
