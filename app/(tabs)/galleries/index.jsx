@@ -48,13 +48,13 @@ const Galleries = () => {
           return (
             <TouchableOpacity
               onPress={() => handleGalleryPress(item)}
-              style={{ flex: 1, marginBottom: 16, marginHorizontal: 5 }} // Flex for even distribution in grid
+              style={{ flex: 1, marginBottom: 10, marginHorizontal: 5 }} // Flex for even distribution in grid
             >
-              <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 10, shadowColor: 'black', shadowOpacity: 0.3, shadowRadius: 5 }}>
-                {/* Render title above thumbnail */}
-                <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center' }}>
+                              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center', color: "white" }}>
                   {title}
                 </Text>
+              <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 10, shadowColor: 'black', shadowOpacity: 0.3, shadowRadius: 5 }}>
+                {/* Render title above thumbnail */}
 
                 {thumbnail ? (
                   <Image
