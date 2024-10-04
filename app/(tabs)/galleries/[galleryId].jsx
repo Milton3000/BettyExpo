@@ -72,49 +72,59 @@ const GalleryDetails = () => {
     if (newMedia.length === 0) {
       return Alert.alert('No media selected to upload.');
     }
-
+  
     setUploading(true);
-
+  
     try {
       const mediaUrls = await Promise.all(newMedia.map(async (media) => {
         let fileUri = media.uri;
-
+  
+        // Log original file size before compression
+        const originalFileInfo = await FileSystem.getInfoAsync(fileUri);
+        console.log(`Original file size: ${originalFileInfo.size} bytes`);
+  
         // Compress image if mediaType is 'image'
         if (mediaType === 'image') {
           const compressedImage = await ImageManipulator.manipulateAsync(
             media.uri,
             [{ resize: { width: 1000 } }], // Resize to 1000px width
-            { compress: 0.9, format: ImageManipulator.SaveFormat.JPEG } // Compress to 90% quality
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
           );
-
+  
+          // Log compressed file size
+          const compressedFileInfo = await FileSystem.getInfoAsync(compressedImage.uri);
+          console.log(`Compressed file size: ${compressedFileInfo.size} bytes`);
+  
           // Check if compressed image file size is acceptable
-          const fileInfo = await FileSystem.getInfoAsync(compressedImage.uri);
-          if (fileInfo.size < 10000) { // Check if file size is smaller than 10KB
+          if (compressedFileInfo.size < 1024) { // Check if file size is smaller than 1KB
             throw new Error('File is too small to upload.');
           }
-
+  
           fileUri = compressedImage.uri;
         }
-
+  
+        // Log the file URI before upload
+        console.log(`Uploading file from URI: ${fileUri}`);
+  
         // Use the original upload logic
         const fileUrl = await uploadFile({ ...media, uri: fileUri }, media.mimeType);
-
+  
         if (!fileUrl) {
           throw new Error('File upload failed: No file URL returned');
         }
-
+  
         return fileUrl;
       }));
-
+  
       // Update the gallery with media URLs
       if (mediaType === 'image') {
         await addImagesToGallery(galleryId, mediaUrls);
       } else {
         await addVideosToGallery(galleryId, mediaUrls);
       }
-
+  
       Alert.alert('Success', 'Media uploaded successfully!');
-
+  
       // Fetch the updated gallery data
       const updatedGallery = await databases.getDocument(config.databaseId, config.galleriesCollectionId, galleryId);
       setGalleryData(updatedGallery);
@@ -126,6 +136,7 @@ const GalleryDetails = () => {
       setNewMedia([]);
     }
   };
+  
 
   const handleImagePress = (index) => {
     setSelectedImageIndex(index); // Ensure we pick the correct image index
