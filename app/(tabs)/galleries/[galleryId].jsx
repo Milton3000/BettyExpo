@@ -88,7 +88,7 @@ const GalleryDetails = () => {
           const compressedImage = await ImageManipulator.manipulateAsync(
             media.uri,
             [{ resize: { width: 1000 } }], // Resize to 1000px width
-            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
+            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
           );
   
           // Log compressed file size
@@ -185,7 +185,7 @@ const GalleryDetails = () => {
   const handleDeleteGallery = async () => {
     try {
       // Call the deleteGallery function from appwrite
-      await deleteGallery(config.galleriesCollectionId, galleryId, galleryData.images, galleryData.videos);
+      await deleteGallery(config.galleriesCollectionId, galleryId, galleryData.images, galleryData.videos, galleryData.thumbnail);
       Alert.alert('Success', 'Gallery deleted successfully!');
 
       // Automatically close the delete modal

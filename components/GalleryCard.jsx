@@ -1,25 +1,38 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import React from 'react';
+import { icons } from '../constants';
 
 const GalleryCard = ({ gallery }) => {
-  // Safeguard against invalid data
-  const title = gallery?.title || "Untitled";  
-  const thumbnail = gallery?.thumbnail || null; 
+  // console.log('Gallery Data:', gallery); // Log gallery data for inspection
+  
+  const username = gallery?.users?.[0]?.username || "Unknown User"; // Access the expanded username
 
   return (
-    <View style={{ padding: 16, backgroundColor: 'white', borderRadius: 10, shadowColor: 'black', shadowOpacity: 0.5 }}>
-      {/* Display title above the image */}
-      <Text style={{ marginBottom: 8, fontSize: 18, fontWeight: '600', color: 'black' }}>{title}</Text>
+    <View className="flex-col items-center px-4 mb-14">
+      <View className="flex-row gap-3 items-start">
+        <View className="justify-center flex-1 ml-3 gap-y-1">
+          <Text className="text-white font-psemibold text-sm" numberOfLines={1}>
+            {gallery.title || "Untitled"}
+          </Text>
+          <Text className="text-xs text-gray-100 font-pregular" numberOfLines={1}>
+            {username}
+          </Text>
+        </View>
+        <View className="pt-2">
+          <Image source={icons.menu} className="w-5 h-5" resizeMode="contain" />
+        </View>
+      </View>
 
-      {thumbnail ? (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        className="w-full h-60 rounded-xl mt-3 relative justify-center items-center"
+      >
         <Image
-          source={{ uri: thumbnail }}
-          style={{ width: '100%', height: 200, borderRadius: 10 }}
+          source={{ uri: gallery.thumbnail }}
+          className="w-full h-full rounded-xl mt-3"
           resizeMode="cover"
         />
-      ) : (
-        <Text>No Thumbnail Available</Text>
-      )}
+      </TouchableOpacity>
     </View>
   );
 };
