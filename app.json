@@ -14,13 +14,41 @@
     },
     "ios": {
       "supportsTablet": true,
-      "package": "com.betty.bettybooth"
+      "bundleIdentifier": "com.betty.bettybooth",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["betty"]
+          }
+        ]
+      }
     },
     "android": {
+      "package": "com.betty.bettybooth",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "https",
+              "host": "*.bettybooth.com",
+              "pathPrefix": "/gallery/"
+            },
+            {
+              "scheme": "betty",
+              "host": "gallery"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

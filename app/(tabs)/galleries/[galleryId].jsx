@@ -7,9 +7,10 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImageManipulator from 'expo-image-manipulator'; // Import ImageManipulator for compression
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
+import QRCode from 'react-native-qrcode-svg'; // Import QR Code generator
 
 const GalleryDetails = () => {
   const { galleryId } = useLocalSearchParams();
@@ -22,6 +23,7 @@ const GalleryDetails = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0); // Track the selected image
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false); // State for delete modal
+  const [qrModalVisible, setQrModalVisible] = useState(false); // State for QR code modal
 
   // Reanimated Shared Value for swipe animations
   const translateX = useSharedValue(0);
@@ -136,7 +138,6 @@ const GalleryDetails = () => {
       setNewMedia([]);
     }
   };
-  
 
   const handleImagePress = (index) => {
     setSelectedImageIndex(index); // Ensure we pick the correct image index
@@ -213,10 +214,16 @@ const GalleryDetails = () => {
         <TouchableOpacity onPress={() => router.push('/galleries')}>
           <Feather name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', flex: 1 }}>{title}</Text>
+        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', flex: 1}}>{title}</Text>
         <TouchableOpacity onPress={() => setDeleteModalVisible(true)}>
           <Feather name="settings" size={24} color="white" />
         </TouchableOpacity>
+        {/* QR Code Button */}
+        <View style={{ margin: 5}}>
+        <TouchableOpacity onPress={() => setQrModalVisible(true)}>
+          <MaterialIcons name="qr-code" size={24} color="white" />
+        </TouchableOpacity>
+        </View>
       </View>
 
       {/* Render the event date */}
@@ -320,6 +327,19 @@ const GalleryDetails = () => {
           </PanGestureHandler>
         </Modal>
       </GestureHandlerRootView>
+
+      {/* Modal for QR Code */}
+      <Modal visible={qrModalVisible} transparent={true} animationType="slide" onRequestClose={() => setQrModalVisible(false)}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+          <TouchableOpacity style={{ position: 'absolute', top: 60, right: 12 }} onPress={() => setQrModalVisible(false)}>
+            <Feather name="x" size={35} color="white" />
+          </TouchableOpacity>
+
+          <QRCode value={`betty://gallery/${galleryId}`} size={250} color="white" backgroundColor="black" />
+
+          <Text style={{ color: 'white', marginTop: 20 }}>Scan this code to view the gallery.</Text>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
