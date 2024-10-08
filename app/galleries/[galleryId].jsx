@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, FlatList, Image, Text, TouchableOpacity, Dimensions, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { databases, config, addImagesToGallery, addVideosToGallery, uploadFile, deleteGallery } from '../../../lib/appwrite'; // Import deleteGallery
+import { databases, config, addImagesToGallery, addVideosToGallery, uploadFile, deleteGallery } from '../../lib/appwrite'; // Import deleteGallery
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';

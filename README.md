@@ -155,3 +155,16 @@ export const getAllPosts = async () => {
     throw new Error(error);
   }
 }
+
+
+
+      <Tabs.Screen
+        name="galleries/[galleryId]"
+        options={{
+          title: "Image Library",
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iconName="folder-open-outline" color={color} name="Library" focused={focused} />
+          ),
+        }}
+      />

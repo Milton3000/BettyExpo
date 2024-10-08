@@ -110,7 +110,7 @@ const CreateGallery = () => {
       });
 
       Alert.alert("Success", "Gallery created successfully");
-      router.push("/home");
+      router.push("/galleries");
     } catch (error) {
       Alert.alert("Error", error.message);
     } finally {

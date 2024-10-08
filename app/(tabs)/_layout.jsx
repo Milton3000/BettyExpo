@@ -39,16 +39,6 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="galleries/[galleryId]"
-        options={{
-          title: "Image Library",
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon iconName="folder-open-outline" color={color} name="Library" focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="create"
         options={{
           title: "Create",
