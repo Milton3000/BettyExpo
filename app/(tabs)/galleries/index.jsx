@@ -1,29 +1,37 @@
-import { View, FlatList, TouchableOpacity, Image, Text } from 'react-native';
+import { View, FlatList, TouchableOpacity, Image, Text, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getLatestGalleries } from '../../../lib/appwrite';
-import { useRouter, useFocusEffect } from 'expo-router';  // Import useFocusEffect
+import { useRouter, useFocusEffect } from 'expo-router';
 import InfoBox from '../../../components/InfoBox';
-import { useEffect, useState, useCallback } from 'react';  // Import useCallback for useFocusEffect
+import { useEffect, useState, useCallback } from 'react';
 
 const Galleries = () => {
   const [galleries, setGalleries] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);  // State for refresh control
   const router = useRouter();
 
-  // Refetch galleries when the screen is focused
+  const fetchGalleries = async () => {
+    try {
+      const latestGalleries = await getLatestGalleries();
+      setGalleries(latestGalleries);
+    } catch (error) {
+      console.error("Error fetching galleries:", error);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const fetchGalleries = async () => {
-        try {
-          const latestGalleries = await getLatestGalleries();
-          setGalleries(latestGalleries);  // Update the galleries list
-        } catch (error) {
-          console.error("Error fetching galleries:", error);
-        }
-      };
-
-      fetchGalleries(); // Fetch galleries when returning to this screen
-    }, [])  // Empty dependency array ensures this runs every time the screen is focused
+      fetchGalleries();
+    }, [])
   );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    // Simulate delay to test refresh spinner visibility
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await fetchGalleries();
+    setRefreshing(false);
+  };
 
   const handleGalleryPress = (gallery) => {
     router.push(`/galleries/${gallery.$id}`);
@@ -38,9 +46,8 @@ const Galleries = () => {
       <FlatList
         data={galleries}
         keyExtractor={(item) => item.$id}
-        numColumns={2}  // Set to 2 columns for a grid layout
-        key={'_'}  // Force a re-render when columns change
-        columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 10 }}  // Styling for grid columns
+        numColumns={2}
+        columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 10 }}
         renderItem={({ item }) => {
           const title = item?.title || "Untitled";
           const thumbnail = item?.thumbnail || null;
@@ -48,14 +55,12 @@ const Galleries = () => {
           return (
             <TouchableOpacity
               onPress={() => handleGalleryPress(item)}
-              style={{ flex: 1, marginBottom: 10, marginHorizontal: 5 }} // Flex for even distribution in grid
+              style={{ flex: 1, marginBottom: 10, marginHorizontal: 5 }}
             >
-                              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center', color: "white" }}>
-                  {title}
-                </Text>
+              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center', color: "white" }}>
+                {title}
+              </Text>
               <View style={{ padding: 10, shadowColor: 'black', shadowOpacity: 0.3, shadowRadius: 5 }}>
-                {/* Render title above thumbnail */}
-
                 {thumbnail ? (
                   <Image
                     source={{ uri: thumbnail }}
@@ -76,6 +81,13 @@ const Galleries = () => {
             titleStyles="text-lg"
           />
         )}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#fff"  // Ensure the spinner is visible
+          />
+        }
       />
     </SafeAreaView>
   );
