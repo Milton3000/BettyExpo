@@ -34,7 +34,7 @@ const TabsLayout = () => {
         },
       }}
     >
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="home"
         options={{
           title: "Home",
@@ -43,7 +43,7 @@ const TabsLayout = () => {
             <TabIcon icon={icons.home} color={color} name="Home" focused={focused} />
           ),
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="galleries/index"
         options={{
@@ -74,16 +74,16 @@ const TabsLayout = () => {
           ),
         }}
       />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={icons.profile} color={color} name="Profile" focused={focused} />
-          ),
-        }}
-      />
+<Tabs.Screen
+  name="settings"
+  options={{
+    title: "Settings",
+    headerShown: false,
+    tabBarIcon: ({ color, focused }) => (
+      <TabIcon icon={icons.settings} color={color} name="Settings" focused={focused} />
+    ),
+  }}
+/>
     </Tabs>
   );
 };

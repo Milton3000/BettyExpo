@@ -53,7 +53,7 @@ const Galleries = () => {
                               <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center', color: "white" }}>
                   {title}
                 </Text>
-              <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 10, shadowColor: 'black', shadowOpacity: 0.3, shadowRadius: 5 }}>
+              <View style={{ padding: 10, shadowColor: 'black', shadowOpacity: 0.3, shadowRadius: 5 }}>
                 {/* Render title above thumbnail */}
 
                 {thumbnail ? (

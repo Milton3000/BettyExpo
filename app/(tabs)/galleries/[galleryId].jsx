@@ -90,7 +90,7 @@ const GalleryDetails = () => {
           const compressedImage = await ImageManipulator.manipulateAsync(
             media.uri,
             [{ resize: { width: 1000 } }], // Resize to 1000px width
-            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
           );
   
           // Log compressed file size
@@ -235,7 +235,6 @@ const GalleryDetails = () => {
 
       {images.length > 0 && (
         <View style={{ paddingHorizontal: 16, marginTop: 24 }}>
-          <Text style={{ fontSize: 20, marginBottom: 8, color: 'white', textAlign: 'center' }}>Image Library</Text>
           <FlatList
             data={images}
             key={`grid-${images.length}`}
