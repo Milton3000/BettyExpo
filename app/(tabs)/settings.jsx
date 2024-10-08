@@ -1,92 +1,88 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, Modal, Image } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { signOut, deleteAccount } from '../../lib/appwrite';  // Import the deleteAccount function
+import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { signOut } from '../../lib/appwrite';  // Import signOut
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { icons } from '../../constants';
-import { router } from 'expo-router';  // For navigation
+import { useRouter } from 'expo-router';  // For navigation
+import { icons } from '../../constants';  // For logout icon
+
+// Import modals from the modals folder
+import AccountModal from '../../modals/AccountModal';
+import NotificationsModal from '../../modals/NotificationsModal';
+import AccessModal from '../../modals/AccessModal';
+import HelpModal from '../../modals/HelpModal';
+import DeleteAccountModal from '../../modals/DeleteAccountModal';  // Import the Delete Account modal
 
 const Settings = () => {
   const { user, setUser, setIsLogged } = useGlobalContext();
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(null);  // Generic modal state
+  const router = useRouter();
 
   // Logout functionality
   const logout = async () => {
-    await signOut();
-    setUser(null);
-    setIsLogged(false);
-    router.replace('/sign-in');  // Redirect to sign-in after logging out
-  };
-
-  // Delete Account functionality
-  const handleDeleteAccount = async () => {
     try {
-      await deleteAccount();  // This will be the function that deletes the user's account
-      Alert.alert("Account Deleted", "Your account has been successfully deleted.");
-      setDeleteModalVisible(false);
-      logout();  // After deletion, log the user out and redirect to sign-in
+      await signOut();
+      setUser(null);
+      setIsLogged(false);
+      router.replace('/sign-in');
     } catch (error) {
-      console.error('Error deleting account:', error);
-      Alert.alert('Error', 'Failed to delete account.');
+      console.error('Error logging out:', error);
     }
   };
 
+  // Function to handle opening modals for each setting item
+  const openModal = (modalType) => {
+    setModalVisible(modalType);
+  };
+
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>Settings</Text>
-
-      <View style={{ marginBottom: 10 }}>
-        <Text style={{ fontSize: 18 }}>Account</Text>
-        <Text style={{ color: '#888' }}>Manage your account settings</Text>
-      </View>
-
-      <View style={{ marginBottom: 10 }}>
-        <Text style={{ fontSize: 18 }}>Notifications</Text>
-        <Text style={{ color: '#888' }}>Adjust your notification preferences</Text>
-      </View>
-
-      <View style={{ marginBottom: 10 }}>
-        <Text style={{ fontSize: 18 }}>Access</Text>
-        <Text style={{ color: '#888' }}>Control your access settings</Text>
-      </View>
-
-      <View style={{ marginBottom: 10 }}>
-        <Text style={{ fontSize: 18 }}>Help</Text>
-        <Text style={{ color: '#888' }}>Get support or find FAQs</Text>
-      </View>
-
-      {/* Delete Account Button */}
-      <TouchableOpacity
-        onPress={() => setDeleteModalVisible(true)}
-        style={{ marginTop: 20, padding: 15, backgroundColor: 'red', borderRadius: 10 }}
-      >
-        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Delete Account</Text>
-      </TouchableOpacity>
-
-      {/* Logout Button */}
-      <View style={{ marginTop: 30, alignItems: 'center' }}>
-        <TouchableOpacity onPress={logout}>
-          <Image source={icons.logout} style={{ width: 30, height: 30 }} />
-          <Text style={{ color: '#888', marginTop: 10 }}>Logout</Text>
+    <SafeAreaView className="bg-primary h-full">
+      <ScrollView className="px-4 my-6">
+        {/* Top-right Logout Button */}
+        <TouchableOpacity onPress={logout} style={{ position: 'absolute', top: 10, right: 20 }}>
+          <Image source={icons.logout} style={{ width: 24, height: 24 }} />
         </TouchableOpacity>
-      </View>
 
-      {/* Delete Account Confirmation Modal */}
-      <Modal visible={deleteModalVisible} transparent={true} animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' }}>Confirm Delete</Text>
-            <Text style={{ marginBottom: 20, textAlign: 'center' }}>Are you sure you want to delete your account and all of its data?</Text>
-            <TouchableOpacity onPress={handleDeleteAccount} style={{ padding: 10, backgroundColor: 'red', borderRadius: 5 }}>
-              <Text style={{ color: 'white', textAlign: 'center' }}>Delete Account</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={{ marginTop: 10 }}>
-              <Text style={{ textAlign: 'center', color: 'blue' }}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
+        {/* Settings Header */}
+        <Text className="text-2xl text-white font-psemibold mb-10">Settings</Text>
+
+        {/* Account Item */}
+        <TouchableOpacity onPress={() => openModal('Account')} style={{ marginBottom: 20 }}>
+          <Text className="text-base text-white">Account</Text>
+          <Text className="text-sm text-gray-100">Manage your account settings</Text>
+        </TouchableOpacity>
+
+        {/* Notifications Item */}
+        <TouchableOpacity onPress={() => openModal('Notifications')} style={{ marginBottom: 20 }}>
+          <Text className="text-base text-white">Notifications</Text>
+          <Text className="text-sm text-gray-100">Adjust your notification preferences</Text>
+        </TouchableOpacity>
+
+        {/* Access Item */}
+        <TouchableOpacity onPress={() => openModal('Access')} style={{ marginBottom: 20 }}>
+          <Text className="text-base text-white">Access</Text>
+          <Text className="text-sm text-gray-100">Control your access settings</Text>
+        </TouchableOpacity>
+
+        {/* Help Item */}
+        <TouchableOpacity onPress={() => openModal('Help')} style={{ marginBottom: 20 }}>
+          <Text className="text-base text-white">Help</Text>
+          <Text className="text-sm text-gray-100">Get support or find FAQs</Text>
+        </TouchableOpacity>
+
+        {/* Delete Account */}
+        <TouchableOpacity onPress={() => openModal('DeleteAccount')} style={{ marginBottom: 20 }}>
+          <Text className="text-base text-red-500">Delete Account</Text>  
+        </TouchableOpacity>
+
+        {/* Modals for each setting */}
+        <AccountModal visible={modalVisible === 'Account'} onClose={() => setModalVisible(null)} />
+        <NotificationsModal visible={modalVisible === 'Notifications'} onClose={() => setModalVisible(null)} />
+        <AccessModal visible={modalVisible === 'Access'} onClose={() => setModalVisible(null)} />
+        <HelpModal visible={modalVisible === 'Help'} onClose={() => setModalVisible(null)} />
+        <DeleteAccountModal visible={modalVisible === 'DeleteAccount'} onClose={() => setModalVisible(null)} />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

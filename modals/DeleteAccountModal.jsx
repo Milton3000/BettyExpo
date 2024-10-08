@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, Alert } from 'react-native';
-import { deleteAccount } from '../../lib/appwrite';  // Import the deleteAccount function
-import { useGlobalContext } from '../../context/GlobalProvider';
+import { deleteAccount } from '../lib/appwrite';
 import { useRouter } from 'expo-router';
+import { useGlobalContext } from '../context/GlobalProvider';
 
 const DeleteAccountModal = ({ visible, onClose }) => {
   const { setUser, setIsLogged } = useGlobalContext();
@@ -10,39 +10,31 @@ const DeleteAccountModal = ({ visible, onClose }) => {
 
   const handleDeleteAccount = async () => {
     try {
-      // Call the deleteAccount function
-      await deleteAccount();
-      
-      // Reset user state and log out
+      await deleteAccount();  // Call the deleteAccount function
       setUser(null);
       setIsLogged(false);
-      
-      Alert.alert('Account Deleted', 'Your account has been successfully deleted.');
-
-      // Close modal and redirect to sign-in page
-      onClose();
       router.replace('/sign-in');
-      
+      Alert.alert('Success', 'Your account has been deleted.');
     } catch (error) {
-      Alert.alert('Error', 'Failed to delete account.');
+      Alert.alert('Error', 'Failed to delete your account.');
+      console.error('Error deleting account:', error);
     }
+    onClose();  // Close the modal after the action
   };
 
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
         <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
           <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' }}>Delete Account</Text>
-          <Text>Are you sure you want to delete your account and all its data? This action cannot be undone.</Text>
-          
-          <TouchableOpacity onPress={onClose} style={{ marginTop: 20 }}>
-            <Text style={{ textAlign: 'center', color: 'blue' }}>Cancel</Text>
+          <Text style={{ marginBottom: 20, textAlign: 'center' }}>
+            Are you sure you want to delete your account? This action cannot be undone.
+          </Text>
+          <TouchableOpacity onPress={handleDeleteAccount} style={{ padding: 10, backgroundColor: 'red', borderRadius: 5 }}>
+            <Text style={{ color: 'white', textAlign: 'center' }}>Delete Account</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity
-            onPress={handleDeleteAccount}
-            style={{ marginTop: 10, backgroundColor: 'red', padding: 10, borderRadius: 5 }}>
-            <Text style={{ textAlign: 'center', color: 'white' }}>Confirm Delete</Text>
+          <TouchableOpacity onPress={onClose} style={{ marginTop: 10 }}>
+            <Text style={{ textAlign: 'center', color: 'blue' }}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </View>
