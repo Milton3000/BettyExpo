@@ -18,7 +18,9 @@
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["betty"]
+            "CFBundleURLSchemes": [
+              "betty"
+            ]
           }
         ]
       }
@@ -55,6 +57,17 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "83c00fa4-54eb-4f32-b95c-c772d3f5cd19"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/83c00fa4-54eb-4f32-b95c-c772d3f5cd19"
+    }
   }
 }
