@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "BettyExpo",
-    "slug": "BettyExpo",
+    "name": "bettyexpo",
+    "slug": "bettyexpo",
     "scheme": "betty",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -60,14 +60,14 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "83c00fa4-54eb-4f32-b95c-c772d3f5cd19"
+        "projectId": "00624e9d-3ae8-40ff-a204-73350c1d9d91"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/83c00fa4-54eb-4f32-b95c-c772d3f5cd19"
+      "url": "https://u.expo.dev/00624e9d-3ae8-40ff-a204-73350c1d9d91"
     }
   }
 }
