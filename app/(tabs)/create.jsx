@@ -89,26 +89,74 @@ const CreateGallery = () => {
     if (form.galleryTitle === "" || !form.thumbnail || form.assets.length === 0) {
       return Alert.alert("Please provide all required fields");
     }
-
+  
     setUploading(true);
     try {
-      // Create the gallery
+      // Compress the thumbnail
+      let compressedThumbnail = form.thumbnail;
+      if (compressedThumbnail) {
+        const compressedImage = await ImageManipulator.manipulateAsync(
+          compressedThumbnail.uri,
+          [{ resize: { width: 1000 } }], // Resize to 1000px width
+          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
+        );
+  
+        // Set file metadata for the thumbnail
+        const thumbnailName = compressedThumbnail.fileName || `thumbnail-${Date.now()}.jpg`;
+        compressedThumbnail = {
+          ...compressedThumbnail,
+          uri: compressedImage.uri,
+          name: thumbnailName,
+          type: 'image/jpeg',
+          size: compressedImage.size || compressedThumbnail.size,
+        };
+      }
+  
+      // Compress each asset if the assetType is 'image'
+      let compressedAssets = form.assets;
+      if (form.assetType === 'image') {
+        compressedAssets = await Promise.all(
+          form.assets.map(async (asset) => {
+            const compressedImage = await ImageManipulator.manipulateAsync(
+              asset.uri,
+              [{ resize: { width: 1000 } }], // Resize to 1000px width
+              { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
+            );
+  
+            // Set file metadata for each asset
+            const assetName = asset.fileName || `asset-${Date.now()}.jpg`;
+            return {
+              ...asset,
+              uri: compressedImage.uri,
+              name: assetName,
+              type: 'image/jpeg',
+              size: compressedImage.size || asset.size,
+            };
+          })
+        );
+      }
+  
+      // Log the file details for debugging
+      console.log('Thumbnail being uploaded:', compressedThumbnail);
+      console.log('Assets being uploaded:', compressedAssets);
+  
+      // Create the gallery with the compressed thumbnail and assets
       const { newGallery } = await createGallery({
         title: form.galleryTitle,
-        thumbnail: form.thumbnail,
-        assets: form.assets,
+        thumbnail: compressedThumbnail,
+        assets: compressedAssets,
         assetType: form.assetType,
         userId: user.$id,
       });
-
+  
       // Optimistic update for instant feedback
       setGalleries((prevGalleries) => [...prevGalleries, newGallery]);
-
+  
       // Fetch new galleries in the background
       fetchGalleries().then((updatedGalleries) => {
         setGalleries(updatedGalleries);
       });
-
+  
       Alert.alert("Success", "Gallery created successfully");
       router.push("/galleries");
     } catch (error) {
@@ -123,6 +171,7 @@ const CreateGallery = () => {
       setUploading(false);
     }
   };
+  
 
 
   return (

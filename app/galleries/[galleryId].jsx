@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
 import { View, FlatList, Image, Text, TouchableOpacity, Dimensions, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { databases, config, addImagesToGallery, addVideosToGallery, uploadFile, deleteGallery } from '../../lib/appwrite'; // Import deleteGallery
+import { databases, config, addImagesToGallery, addVideosToGallery, uploadFile, deleteGallery } from '../../lib/appwrite';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
-import * as ImageManipulator from 'expo-image-manipulator'; // Import ImageManipulator for compression
+import * as ImageManipulator from 'expo-image-manipulator';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
-import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
-import QRCode from 'react-native-qrcode-svg'; // Import QR Code generator
+import QRCode from 'react-native-qrcode-svg';
 
 const GalleryDetails = () => {
   const { galleryId } = useLocalSearchParams();
@@ -20,15 +18,13 @@ const GalleryDetails = () => {
   const [uploading, setUploading] = useState(false);
   const [newMedia, setNewMedia] = useState([]);
   const [mediaType, setMediaType] = useState(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0); // Track the selected image
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false); // State for delete modal
-  const [qrModalVisible, setQrModalVisible] = useState(false); // State for QR code modal
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [qrModalVisible, setQrModalVisible] = useState(false);
 
-  // Reanimated Shared Value for swipe animations
-  const translateX = useSharedValue(0);
   const screenWidth = Dimensions.get('window').width;
-  const imageModalSize = screenWidth * 0.8; // Uniform size for modal images
+  const imageModalSize = screenWidth * 0.8;
 
   useEffect(() => {
     const fetchGallery = async () => {
@@ -45,7 +41,6 @@ const GalleryDetails = () => {
     if (galleryId) fetchGallery();
   }, [galleryId]);
 
-  // Helper function to format the event date
   const formatEventDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -74,60 +69,64 @@ const GalleryDetails = () => {
     if (newMedia.length === 0) {
       return Alert.alert('No media selected to upload.');
     }
-  
+
     setUploading(true);
-  
+
     try {
       const mediaUrls = await Promise.all(newMedia.map(async (media) => {
         let fileUri = media.uri;
-  
-        // Log original file size before compression
+
         const originalFileInfo = await FileSystem.getInfoAsync(fileUri);
-        console.log(`Original file size: ${originalFileInfo.size} bytes`);
-  
-        // Compress image if mediaType is 'image'
+
         if (mediaType === 'image') {
           const compressedImage = await ImageManipulator.manipulateAsync(
             media.uri,
-            [{ resize: { width: 1000 } }], // Resize to 1000px width
-            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
+            [{ resize: { width: 1000 } }],
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
           );
-  
-          // Log compressed file size
+
           const compressedFileInfo = await FileSystem.getInfoAsync(compressedImage.uri);
-          console.log(`Compressed file size: ${compressedFileInfo.size} bytes`);
-  
-          // Check if compressed image file size is acceptable
-          if (compressedFileInfo.size < 1024) { // Check if file size is smaller than 1KB
+
+          if (compressedFileInfo.size < 1024) {
             throw new Error('File is too small to upload.');
           }
-  
+
           fileUri = compressedImage.uri;
         }
-  
-        // Log the file URI before upload
-        console.log(`Uploading file from URI: ${fileUri}`);
-  
-        // Use the original upload logic
-        const fileUrl = await uploadFile({ ...media, uri: fileUri }, media.mimeType);
-  
+
+        const fileExists = await FileSystem.getInfoAsync(fileUri);
+        if (!fileExists || !fileExists.exists) {
+          throw new Error('File does not exist or is inaccessible.');
+        }
+
+        const fileName = media.fileName || fileUri.split('/').pop();
+        const mimeType = media.mimeType || 'image/jpeg';
+        const fileSize = fileExists.size;
+
+        const fileUrl = await uploadFile(
+          {
+            name: fileName,
+            uri: fileUri,
+            type: mimeType,
+            size: fileSize,
+          },
+          mimeType
+        );
+
         if (!fileUrl) {
           throw new Error('File upload failed: No file URL returned');
         }
-  
+
         return fileUrl;
       }));
-  
-      // Update the gallery with media URLs
+
       if (mediaType === 'image') {
         await addImagesToGallery(galleryId, mediaUrls);
       } else {
         await addVideosToGallery(galleryId, mediaUrls);
       }
-  
+
       Alert.alert('Success', 'Media uploaded successfully!');
-  
-      // Fetch the updated gallery data
       const updatedGallery = await databases.getDocument(config.databaseId, config.galleriesCollectionId, galleryId);
       setGalleryData(updatedGallery);
     } catch (error) {
@@ -140,27 +139,8 @@ const GalleryDetails = () => {
   };
 
   const handleImagePress = (index) => {
-    setSelectedImageIndex(index); // Ensure we pick the correct image index
-    translateX.value = 0; // Reset translateX when opening the modal
+    setSelectedImageIndex(index);
     setModalVisible(true);
-  };
-
-  const handlePreviousImage = () => {
-    if (selectedImageIndex > 0) {
-      translateX.value = withSpring(screenWidth, {}, () => {
-        runOnJS(setSelectedImageIndex)(selectedImageIndex - 1);
-        translateX.value = 0;
-      });
-    }
-  };
-
-  const handleNextImage = () => {
-    if (selectedImageIndex < galleryData.images.length - 1) {
-      translateX.value = withSpring(-screenWidth, {}, () => {
-        runOnJS(setSelectedImageIndex)(selectedImageIndex + 1);
-        translateX.value = 0;
-      });
-    }
   };
 
   const handleExportImage = async () => {
@@ -171,7 +151,6 @@ const GalleryDetails = () => {
       }
 
       const { uri } = await FileSystem.downloadAsync(galleryData.images[selectedImageIndex], FileSystem.documentDirectory + 'image.jpg');
-
       const asset = await MediaLibrary.createAssetAsync(uri);
       await MediaLibrary.createAlbumAsync('Download', asset, false);
 
@@ -182,26 +161,16 @@ const GalleryDetails = () => {
     }
   };
 
-  // Handle deleting the gallery and associated media
   const handleDeleteGallery = async () => {
     try {
-      // Call the deleteGallery function from appwrite
       await deleteGallery(config.galleriesCollectionId, galleryId, galleryData.images, galleryData.videos, galleryData.thumbnail);
       Alert.alert('Success', 'Gallery deleted successfully!');
-
-      // Automatically close the delete modal
       setDeleteModalVisible(false);
-
-      // Navigate back to the galleries list after deletion
       router.push('/galleries');
     } catch (error) {
       Alert.alert('Error', 'Failed to delete gallery.');
     }
   };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
 
   if (loading) return <Text>Loading...</Text>;
   if (!galleryData) return <Text>No gallery found</Text>;
@@ -214,19 +183,17 @@ const GalleryDetails = () => {
         <TouchableOpacity onPress={() => router.push('/galleries')}>
           <Feather name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', flex: 1}}>{title}</Text>
+        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', flex: 1 }}>{title}</Text>
         <TouchableOpacity onPress={() => setDeleteModalVisible(true)}>
           <Feather name="settings" size={24} color="white" />
         </TouchableOpacity>
-        {/* QR Code Button */}
-        <View style={{ margin: 5}}>
-        <TouchableOpacity onPress={() => setQrModalVisible(true)}>
-          <MaterialIcons name="qr-code" size={24} color="white" />
-        </TouchableOpacity>
+        <View style={{ margin: 5 }}>
+          <TouchableOpacity onPress={() => setQrModalVisible(true)}>
+            <MaterialIcons name="qr-code" size={24} color="white" />
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Render the event date */}
       {eventDate && (
         <Text style={{ color: 'gray', textAlign: 'center', marginTop: 8 }}>
           Created on: {formatEventDate(eventDate)}
@@ -237,7 +204,6 @@ const GalleryDetails = () => {
         <View style={{ paddingHorizontal: 16, marginTop: 24 }}>
           <FlatList
             data={images}
-            key={`grid-${images.length}`}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item, index }) => (
               <TouchableOpacity onPress={() => handleImagePress(index)}>
@@ -250,17 +216,6 @@ const GalleryDetails = () => {
             )}
             numColumns={3}
             contentContainerStyle={{ paddingBottom: 16 }}
-          />
-        </View>
-      )}
-
-      {videos.length > 0 && (
-        <View style={{ paddingHorizontal: 16, marginTop: 24 }}>
-          <Text style={{ fontSize: 20, marginBottom: 8, color: 'white', textAlign: 'center' }}>Videos</Text>
-          <FlatList
-            data={videos}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => <Text style={{ textAlign: 'center', marginBottom: 16 }}>{item}</Text>}
           />
         </View>
       )}
@@ -282,7 +237,43 @@ const GalleryDetails = () => {
         </TouchableOpacity>
       )}
 
-      {/* Modal for delete confirmation */}
+      <Modal visible={modalVisible} transparent={true} animationType="slide">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity style={{ position: 'absolute', top: 60, right: 12, zIndex: 1 }} onPress={() => setModalVisible(false)}>
+            <Feather name="x" size={35} color="white" />
+          </TouchableOpacity>
+          <FlatList
+            data={images}
+            horizontal
+            pagingEnabled
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View style={{ alignItems: 'center', justifyContent: 'center', width: screenWidth }}>
+                <Image
+                  source={{ uri: item }}
+                  style={{ width: screenWidth, height: imageModalSize, borderRadius: 20 }}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+            onMomentumScrollEnd={(event) => {
+              const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+              setSelectedImageIndex(index);
+            }}
+            showsHorizontalScrollIndicator={false}
+            initialScrollIndex={selectedImageIndex}
+            getItemLayout={(data, index) => ({
+              length: screenWidth,
+              offset: screenWidth * index,
+              index,
+            })}
+          />
+          <TouchableOpacity onPress={handleExportImage} style={{ marginBottom: 30, padding: 10, backgroundColor: 'gray', borderRadius: 10 }}>
+            <Text style={{ color: 'white', fontSize: 16 }}>Export</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
       <Modal visible={deleteModalVisible} transparent={true} animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
           <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
@@ -298,44 +289,15 @@ const GalleryDetails = () => {
         </View>
       </Modal>
 
-      <GestureHandlerRootView>
-        <Modal visible={modalVisible} transparent={true} animationType="slide">
-          <PanGestureHandler
-            onGestureEvent={({ nativeEvent }) => {
-              if (nativeEvent.translationX > 50) handlePreviousImage();
-              if (nativeEvent.translationX < -50) handleNextImage();
-            }}
-          >
-            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center' }}>
-              <TouchableOpacity style={{ position: 'absolute', top: 60, right: 12 }} onPress={() => setModalVisible(false)}>
-                <Feather name="x" size={35} color="white" />
-              </TouchableOpacity>
-
-              {galleryData.images[selectedImageIndex] && (
-                <Animated.Image
-                  source={{ uri: galleryData.images[selectedImageIndex] }}
-                  style={[{ width: imageModalSize, height: imageModalSize, borderRadius: 20 }, animatedStyle]}
-                  resizeMode="cover"
-                />
-              )}
-
-              <TouchableOpacity onPress={handleExportImage} style={{ marginTop: 20, padding: 10, backgroundColor: 'gray', borderRadius: 10 }}>
-                <Text style={{ color: 'white', fontSize: 16 }}>Export</Text>
-              </TouchableOpacity>
-            </View>
-          </PanGestureHandler>
-        </Modal>
-      </GestureHandlerRootView>
-
-      {/* Modal for QR Code */}
       <Modal visible={qrModalVisible} transparent={true} animationType="slide" onRequestClose={() => setQrModalVisible(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.8)' }}>
-          <TouchableOpacity style={{ position: 'absolute', top: 60, right: 12 }} onPress={() => setQrModalVisible(false)}>
+          <TouchableOpacity
+            style={{ position: 'absolute', top: 60, right: 12, zIndex: 1 }}
+            onPress={() => setQrModalVisible(false)}
+          >
             <Feather name="x" size={35} color="white" />
           </TouchableOpacity>
-
           <QRCode value={`betty://gallery/${galleryId}`} size={250} color="white" backgroundColor="black" />
-
           <Text style={{ color: 'white', marginTop: 20 }}>Scan this code to view the gallery.</Text>
         </View>
       </Modal>

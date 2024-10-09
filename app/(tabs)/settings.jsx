@@ -39,7 +39,7 @@ const Settings = () => {
     <SafeAreaView className="bg-primary h-full">
       <ScrollView className="px-4 my-6">
         {/* Top-right Logout Button */}
-        <TouchableOpacity onPress={logout} style={{ position: 'absolute', top: 10, right: 20 }}>
+        <TouchableOpacity onPress={logout} style={{ position: 'absolute', right: 10 }}>
           <Image source={icons.logout} style={{ width: 24, height: 24 }} />
         </TouchableOpacity>
 
