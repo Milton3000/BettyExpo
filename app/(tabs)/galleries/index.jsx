@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getLatestGalleries } from '../../../lib/appwrite';
 import { useRouter, useFocusEffect } from 'expo-router';
 import InfoBox from '../../../components/InfoBox';
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 const Galleries = () => {
   const [galleries, setGalleries] = useState([]);
