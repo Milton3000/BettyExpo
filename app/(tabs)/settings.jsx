@@ -72,13 +72,17 @@ const Settings = () => {
 
         {/* Delete Account */}
         <TouchableOpacity onPress={() => openModal('DeleteAccount')} style={{ marginBottom: 20 }}>
-          <Text className="text-base text-red-500">Delete Account</Text>  
+          <Text className="text-base text-red-500">Delete Account</Text>
         </TouchableOpacity>
 
         {/* Modals for each setting */}
         <AccountModal visible={modalVisible === 'Account'} onClose={() => setModalVisible(null)} />
         <NotificationsModal visible={modalVisible === 'Notifications'} onClose={() => setModalVisible(null)} />
-        <AccessModal visible={modalVisible === 'Access'} onClose={() => setModalVisible(null)} />
+        <AccessModal
+          visible={modalVisible === 'Access'}
+          onClose={() => setModalVisible(null)}
+        />
+
         <HelpModal visible={modalVisible === 'Help'} onClose={() => setModalVisible(null)} />
         <DeleteAccountModal visible={modalVisible === 'DeleteAccount'} onClose={() => setModalVisible(null)} />
       </ScrollView>

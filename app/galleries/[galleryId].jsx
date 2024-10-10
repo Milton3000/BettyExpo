@@ -9,6 +9,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
+import AccessModal from '../../modals/AccessModal'; // Import AccessModal
 
 const GalleryDetails = () => {
   const { galleryId } = useLocalSearchParams();
@@ -20,8 +21,10 @@ const GalleryDetails = () => {
   const [mediaType, setMediaType] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);
+  const [accessModalVisible, setAccessModalVisible] = useState(false);
 
   const screenWidth = Dimensions.get('window').width;
   const imageModalSize = screenWidth * 0.8;
@@ -166,6 +169,7 @@ const GalleryDetails = () => {
       await deleteGallery(config.galleriesCollectionId, galleryId, galleryData.images, galleryData.videos, galleryData.thumbnail);
       Alert.alert('Success', 'Gallery deleted successfully!');
       setDeleteModalVisible(false);
+      setSettingsModalVisible(false);
       router.push('/galleries');
     } catch (error) {
       Alert.alert('Error', 'Failed to delete gallery.');
@@ -184,7 +188,7 @@ const GalleryDetails = () => {
           <Feather name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
         <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', flex: 1 }}>{title}</Text>
-        <TouchableOpacity onPress={() => setDeleteModalVisible(true)}>
+        <TouchableOpacity onPress={() => setSettingsModalVisible(true)}>
           <Feather name="settings" size={24} color="white" />
         </TouchableOpacity>
         <View style={{ margin: 5 }}>
@@ -232,11 +236,12 @@ const GalleryDetails = () => {
       </View>
 
       {newMedia.length > 0 && (
-        <TouchableOpacity onPress={uploadMedia} disabled={uploading} style={{ marginTop: 16, padding: 16, backgroundColor: 'green', borderRadius: 10 }}>
+        <TouchableOpacity onPress={uploadMedia} disabled={uploading} style={{ marginTop: 20, padding: 16, backgroundColor: 'green', borderRadius: 10, width: 250, alignSelf: 'center'}}>
           <Text style={{ color: 'white', textAlign: 'center' }}>{uploading ? 'Uploading...' : 'Upload Media'}</Text>
         </TouchableOpacity>
       )}
 
+      {/* Image Modal */}
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center' }}>
           <TouchableOpacity style={{ position: 'absolute', top: 60, right: 12, zIndex: 1 }} onPress={() => setModalVisible(false)}>
@@ -274,21 +279,151 @@ const GalleryDetails = () => {
         </View>
       </Modal>
 
-      <Modal visible={deleteModalVisible} transparent={true} animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' }}>Confirm Delete</Text>
-            <Text style={{ marginBottom: 20, textAlign: 'center' }}>Are you sure you want to delete this gallery? This action cannot be undone.</Text>
-            <TouchableOpacity onPress={handleDeleteGallery} style={{ padding: 10, backgroundColor: 'red', borderRadius: 5 }}>
-              <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
+      {/* Settings Modal for Access and Delete Gallery */}
+      <Modal
+        visible={settingsModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSettingsModalVisible(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0,0,0,0.7)',
+          }}
+        >
+          <View
+            style={{
+              width: 300,
+              padding: 20,
+              backgroundColor: 'white',
+              borderRadius: 10,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: 'bold',
+                marginBottom: 20,
+                textAlign: 'center',
+              }}
+            >
+              Settings
+            </Text>
+
+            {/* Access Option */}
+            <TouchableOpacity
+              onPress={() => {
+                setAccessModalVisible(true);
+                setSettingsModalVisible(false);
+              }}
+              style={{
+                padding: 15,
+                backgroundColor: '#f0f0f0',
+                borderRadius: 8,
+                marginBottom: 15,
+                borderWidth: 1,
+                borderColor: '#ccc',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontWeight: 'bold', color: 'black' }}>Access</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={{ marginTop: 10 }}>
-              <Text style={{ textAlign: 'center', color: 'blue' }}>Cancel</Text>
+
+            {/* Delete Gallery Option */}
+            <TouchableOpacity
+              onPress={() => {
+                setDeleteModalVisible(true);
+                setSettingsModalVisible(false);
+              }}
+              style={{
+                padding: 15,
+                backgroundColor: '#f8d7da',
+                borderRadius: 8,
+                marginBottom: 15,
+                borderWidth: 1,
+                borderColor: '#f5c6cb',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontWeight: 'bold', color: 'red' }}>Delete Gallery</Text>
+            </TouchableOpacity>
+
+            {/* Cancel Button */}
+            <TouchableOpacity
+              onPress={() => setSettingsModalVisible(false)}
+              style={{
+                padding: 10,
+                borderRadius: 5,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontWeight: 'bold', color: 'black' }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
+      {/* Delete Gallery Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0,0,0,0.7)',
+          }}
+        >
+          <View
+            style={{
+              width: 300,
+              padding: 20,
+              backgroundColor: 'white',
+              borderRadius: 10,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: 'bold',
+                marginBottom: 20,
+                textAlign: 'center',
+              }}
+            >
+              Confirm Delete
+            </Text>
+            <Text style={{ marginBottom: 20, textAlign: 'center' }}>
+              Are you sure you want to delete this gallery? This action cannot be undone.
+            </Text>
+            <TouchableOpacity
+              onPress={handleDeleteGallery}
+              style={{
+                padding: 10,
+                backgroundColor: 'red',
+                borderRadius: 5,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setDeleteModalVisible(false)}
+              style={{ marginTop: 20, alignItems: 'center' }}
+            >
+              <Text style={{ fontWeight: 'bold', color: 'black' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* QR Code Modal */}
       <Modal visible={qrModalVisible} transparent={true} animationType="slide" onRequestClose={() => setQrModalVisible(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.8)' }}>
           <TouchableOpacity
@@ -301,6 +436,9 @@ const GalleryDetails = () => {
           <Text style={{ color: 'white', marginTop: 20 }}>Scan this code to view the gallery.</Text>
         </View>
       </Modal>
+
+      {/* Access Modal */}
+      <AccessModal visible={accessModalVisible} onClose={() => setAccessModalVisible(false)} galleryId={galleryId} />
     </SafeAreaView>
   );
 };
