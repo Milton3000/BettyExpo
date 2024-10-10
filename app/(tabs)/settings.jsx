@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signOut } from '../../lib/appwrite';  // Import signOut
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -9,7 +9,6 @@ import { icons } from '../../constants';  // For logout icon
 // Import modals from the modals folder
 import AccountModal from '../../modals/AccountModal';
 import NotificationsModal from '../../modals/NotificationsModal';
-import AccessModal from '../../modals/AccessModal';
 import HelpModal from '../../modals/HelpModal';
 import DeleteAccountModal from '../../modals/DeleteAccountModal';  // Import the Delete Account modal
 
@@ -18,7 +17,26 @@ const Settings = () => {
   const [modalVisible, setModalVisible] = useState(null);  // Generic modal state
   const router = useRouter();
 
-  // Logout functionality
+  // Logout functionality with confirmation step
+  const confirmLogout = () => {
+    Alert.alert(
+      'Confirm Logout',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: logout,  // Call the actual logout function if confirmed
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   const logout = async () => {
     try {
       await signOut();
@@ -39,7 +57,7 @@ const Settings = () => {
     <SafeAreaView className="bg-primary h-full">
       <ScrollView className="px-4 my-6">
         {/* Top-right Logout Button */}
-        <TouchableOpacity onPress={logout} style={{ position: 'absolute', right: 10 }}>
+        <TouchableOpacity onPress={confirmLogout} style={{ position: 'absolute', right: 10, zIndex: 99 }}>
           <Image source={icons.logout} style={{ width: 24, height: 24 }} />
         </TouchableOpacity>
 
@@ -58,12 +76,6 @@ const Settings = () => {
           <Text className="text-sm text-gray-100">Adjust your notification preferences</Text>
         </TouchableOpacity>
 
-        {/* Access Item */}
-        <TouchableOpacity onPress={() => openModal('Access')} style={{ marginBottom: 20 }}>
-          <Text className="text-base text-white">Access</Text>
-          <Text className="text-sm text-gray-100">Control your access settings</Text>
-        </TouchableOpacity>
-
         {/* Help Item */}
         <TouchableOpacity onPress={() => openModal('Help')} style={{ marginBottom: 20 }}>
           <Text className="text-base text-white">Help</Text>
@@ -71,18 +83,13 @@ const Settings = () => {
         </TouchableOpacity>
 
         {/* Delete Account */}
-        <TouchableOpacity onPress={() => openModal('DeleteAccount')} style={{ marginBottom: 20 }}>
+        <TouchableOpacity onPress={() => openModal('DeleteAccount')} style={{ marginTop: 30 }}>
           <Text className="text-base text-red-500">Delete Account</Text>
         </TouchableOpacity>
 
         {/* Modals for each setting */}
         <AccountModal visible={modalVisible === 'Account'} onClose={() => setModalVisible(null)} />
         <NotificationsModal visible={modalVisible === 'Notifications'} onClose={() => setModalVisible(null)} />
-        <AccessModal
-          visible={modalVisible === 'Access'}
-          onClose={() => setModalVisible(null)}
-        />
-
         <HelpModal visible={modalVisible === 'Help'} onClose={() => setModalVisible(null)} />
         <DeleteAccountModal visible={modalVisible === 'DeleteAccount'} onClose={() => setModalVisible(null)} />
       </ScrollView>
@@ -91,7 +98,6 @@ const Settings = () => {
 };
 
 export default Settings;
-
 
 
 

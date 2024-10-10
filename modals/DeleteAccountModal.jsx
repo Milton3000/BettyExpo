@@ -9,17 +9,35 @@ const DeleteAccountModal = ({ visible, onClose }) => {
   const router = useRouter();
 
   const handleDeleteAccount = async () => {
-    try {
-      await deleteAccount();  // Call the deleteAccount function
-      setUser(null);
-      setIsLogged(false);
-      router.replace('/sign-in');
-      Alert.alert('Success', 'Your account has been deleted.');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to delete your account.');
-      console.error('Error deleting account:', error);
-    }
-    onClose();  // Close the modal after the action
+    // Show a second confirmation alert before proceeding
+    Alert.alert(
+      'Confirm Delete',
+      'Are you absolutely sure you want to delete your account? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();  // Call the deleteAccount function
+              setUser(null);
+              setIsLogged(false);
+              router.replace('/sign-in');
+              Alert.alert('Success', 'Your account has been deleted.');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete your account.');
+              console.error('Error deleting account:', error);
+            }
+            onClose();  // Close the modal after the action
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
@@ -27,10 +45,10 @@ const DeleteAccountModal = ({ visible, onClose }) => {
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
         <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
           <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' }}>Delete Account</Text>
-          <Text style={{ marginBottom: 20, textAlign: 'center' }}>
+          <Text style={{ marginBottom: 30, textAlign: 'center' }}>
             Are you sure you want to delete your account? This action cannot be undone.
           </Text>
-          <TouchableOpacity onPress={handleDeleteAccount} style={{ padding: 10, backgroundColor: 'red', borderRadius: 5 }}>
+          <TouchableOpacity onPress={handleDeleteAccount} style={{ marginBottom: 30, padding: 10, backgroundColor: 'red', borderRadius: 10 }}>
             <Text style={{ color: 'white', textAlign: 'center' }}>Delete Account</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={onClose} style={{ marginTop: 10 }}>

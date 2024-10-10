@@ -399,7 +399,7 @@ const GalleryDetails = () => {
             >
               Confirm Delete
             </Text>
-            <Text style={{ marginBottom: 20, textAlign: 'center' }}>
+            <Text style={{ marginBottom: 30, textAlign: 'center' }}>
               Are you sure you want to delete this gallery? This action cannot be undone.
             </Text>
             <TouchableOpacity
@@ -407,8 +407,9 @@ const GalleryDetails = () => {
               style={{
                 padding: 10,
                 backgroundColor: 'red',
-                borderRadius: 5,
+                borderRadius: 10,
                 alignItems: 'center',
+                marginBottom: 10,
               }}
             >
               <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
