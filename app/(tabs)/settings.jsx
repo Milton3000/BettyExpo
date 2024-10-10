@@ -5,6 +5,7 @@ import { signOut } from '../../lib/appwrite';  // Import signOut
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { useRouter } from 'expo-router';  // For navigation
 import { icons } from '../../constants';  // For logout icon
+import { StatusBar } from 'expo-status-bar';  // For status bar
 
 // Import modals from the modals folder
 import AccountModal from '../../modals/AccountModal';
@@ -54,7 +55,8 @@ const Settings = () => {
   };
 
   return (
-    <SafeAreaView className="bg-primary h-full">
+<SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
+<StatusBar style="light" backgroundColor="#161622" />
       <ScrollView className="px-4 my-6">
         {/* Top-right Logout Button */}
         <TouchableOpacity onPress={confirmLogout} style={{ position: 'absolute', right: 10, zIndex: 99 }}>

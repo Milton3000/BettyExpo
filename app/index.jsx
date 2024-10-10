@@ -14,7 +14,8 @@ export default function App() {
     if(!isLoading && isLoggedIn) return <Redirect href="/create" />
 
     return (
-        <SafeAreaView className="bg-primary h-full">
+<SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
+<StatusBar style="light" backgroundColor="#161622" />
             <ScrollView contentContainerStyle={{ height: '100%' }}>
                 {/* can change the VH later down below and/or add min-h*/}
                 <View className="w-full justify-center items-center h-[80vh] px-4">

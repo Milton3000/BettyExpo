@@ -12,6 +12,8 @@ import { createGallery } from '../../lib/appwrite'; // Updated to createGallery
 import { useGlobalContext } from '../../context/GlobalProvider';
 import * as ImageManipulator from 'expo-image-manipulator'; // Add ImageManipulator import
 import { fetchGalleries } from '../../lib/appwrite'; // Import fetchGalleries (ALSO OPTIONAL)
+import { StatusBar } from 'expo-status-bar';
+
 
 
 const CreateGallery = () => {
@@ -175,7 +177,8 @@ const CreateGallery = () => {
 
 
   return (
-    <SafeAreaView className="bg-primary h-full">
+<SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
+<StatusBar style="light" backgroundColor="#161622" />
       <ScrollView className="px-4 my-6">
         <Text className="text-2xl text-white font-psemibold">Create a Gallery</Text>
         <FormField

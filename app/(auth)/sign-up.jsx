@@ -8,6 +8,7 @@ import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
 import { createUser } from '../../lib/appwrite';
 import { useGlobalContext } from "../../context/GlobalProvider";
+import { StatusBar } from 'expo-status-bar';  // For status bar
 
 const SignUp = () => {
   const { setUser, setIsLogged } = useGlobalContext();
@@ -43,7 +44,8 @@ const SignUp = () => {
   };
 
   return (
-    <SafeAreaView className="bg-primary h-full">
+<SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
+<StatusBar style="light" backgroundColor="#161622" />
       <ScrollView>
         <View className="w-full justify-center min-h-[75vh] px-4">
           {/* my-6 and/or min-h-[80vh] for above */}
