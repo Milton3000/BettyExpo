@@ -1,13 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity } from 'react-native';
-import { databases, config } from '../lib/appwrite'; // Import Appwrite setup
+import React, { useState, useEffect } from 'react';
+import { View, Text, Modal, TouchableOpacity, Alert } from 'react-native';
+import { databases, config } from '../lib/appwrite';
 
 const AccessModal = ({ visible, onClose, galleryId }) => {
   const [selectedAccessLevel, setSelectedAccessLevel] = useState(0); // Default to "View Only"
+  
+  // Fetch the current access level when the modal is opened
+  useEffect(() => {
+    const fetchAccessLevel = async () => {
+      if (!galleryId) return;
+      try {
+        const gallery = await databases.getDocument(
+          config.databaseId,
+          config.galleriesCollectionId,
+          galleryId
+        );
+        setSelectedAccessLevel(gallery.accessLevel || 0); // Default to "View Only" if not set
+      } catch (error) {
+        console.error('Failed to fetch access level:', error);
+      }
+    };
+    if (visible) {
+      fetchAccessLevel(); // Fetch the access level when modal is visible
+    }
+  }, [visible, galleryId]);
 
   const saveAccessLevel = async () => {
     if (!galleryId) {
-      console.error('Gallery ID is missing.');
+      Alert.alert('Error', 'Gallery ID is missing.');
       return;
     }
 
@@ -16,13 +36,13 @@ const AccessModal = ({ visible, onClose, galleryId }) => {
       await databases.updateDocument(
         config.databaseId,
         config.galleriesCollectionId,
-        galleryId, // Make sure this is the document ID
+        galleryId,
         { accessLevel: selectedAccessLevel }
       );
-
+      Alert.alert('Success', 'Access level updated successfully!');
       onClose(); // Close the modal after saving
     } catch (error) {
-      console.error('Failed to update access level:', error);
+      Alert.alert('Error', `Failed to update access level: ${error.message}`);
     }
   };
 
@@ -44,7 +64,7 @@ const AccessModal = ({ visible, onClose, galleryId }) => {
             <TouchableOpacity
               key={option.value}
               onPress={() => setSelectedAccessLevel(option.value)}
-              style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10,}}
+              style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}
             >
               <View
                 style={{

@@ -1,34 +1,39 @@
 import { View, FlatList, TouchableOpacity, Image, Text, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getLatestGalleries } from '../../../lib/appwrite';
+import { getUserGalleries } from '../../../lib/appwrite'; // Replace with getUserGalleries
 import { useRouter, useFocusEffect } from 'expo-router';
-import InfoBox from '../../../components/InfoBox';
 import { useState, useCallback } from 'react';
+import { useGlobalContext } from '../../../context/GlobalProvider'; // Access global context
 
 const Galleries = () => {
+  const { user, isLogged } = useGlobalContext(); // Get user and login status from global context
   const [galleries, setGalleries] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);  // State for refresh control
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
   const fetchGalleries = async () => {
     try {
-      const latestGalleries = await getLatestGalleries();
-      setGalleries(latestGalleries);
+      // Fetch galleries for the current user
+      const userGalleries = await getUserGalleries(user.$id); // Fetch galleries for the current user
+  
+      // Sort galleries by creation date in descending order (newest first)
+      const sortedGalleries = userGalleries.sort((a, b) => new Date(b.$createdAt) - new Date(a.$createdAt));
+  
+      setGalleries(sortedGalleries);
     } catch (error) {
       console.error("Error fetching galleries:", error);
     }
-  };
+  };  
 
   useFocusEffect(
     useCallback(() => {
       fetchGalleries();
-    }, [])
+    }, [user]) // Ensure it refetches when user changes
   );
 
   const onRefresh = async () => {
     setRefreshing(true);
-    // Simulate delay to test refresh spinner visibility
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 200)); // Delay for testing refresh spinner
     await fetchGalleries();
     setRefreshing(false);
   };
@@ -37,9 +42,17 @@ const Galleries = () => {
     router.push(`/galleries/${gallery.$id}`);
   };
 
+  const handleCreateGalleryPress = () => {
+    router.push("/create");
+  };
+
+  const handleSignUpPress = () => {
+    router.push("/sign-up");
+  };
+
   return (
-    <SafeAreaView className="bg-primary h-full">
-      <Text className="text-gray-100 text-xl font-bold mb-5 mt-5 text-center">
+    <SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
+      <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' }}>
         Galleries
       </Text>
 
@@ -68,24 +81,38 @@ const Galleries = () => {
                     resizeMode="cover"
                   />
                 ) : (
-                  <Text style={{ textAlign: 'center' }}>No Thumbnail Available</Text>
+                  <Text style={{ textAlign: 'center', color: 'white' }}>No Thumbnail Available</Text>
                 )}
               </View>
             </TouchableOpacity>
           );
         }}
         ListEmptyComponent={() => (
-          <InfoBox
-            title="No galleries available."
-            containerStyles="mt-10"
-            titleStyles="text-lg"
-          />
+          <View style={{ alignItems: 'center', marginTop: 50 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'white', marginBottom: 10 }}>
+              {isLogged ? "Create your first gallery" : "Create an account to get started!"}
+            </Text>
+            <TouchableOpacity
+              onPress={isLogged ? handleCreateGalleryPress : handleSignUpPress}
+              style={{
+                backgroundColor: '#6200EE',
+                paddingVertical: 12,
+                paddingHorizontal: 20,
+                borderRadius: 8,
+                marginTop: 10,
+              }}
+            >
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                {isLogged ? "Create Gallery" : "Sign Up"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#fff"  // Ensure the spinner is visible
+            tintColor="#fff"
           />
         }
       />
