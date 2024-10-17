@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, Image, Text, TouchableOpacity, Dimensions, Modal, Alert } from 'react-native';
+import { View, FlatList, Image, Text, TouchableOpacity, Dimensions, Modal, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialIcons, AntDesign } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -17,6 +17,7 @@ const GalleryDetails = () => {
   const router = useRouter();
   const [galleryData, setGalleryData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); 
   const [selectedImages, setSelectedImages] = useState([]);
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -29,23 +30,26 @@ const GalleryDetails = () => {
   const { uploadMedia, newMedia, openPicker, uploading } = useUploadMedia();
   const screenWidth = Dimensions.get('window').width;
 
-  useEffect(() => {
-    const fetchGallery = async () => {
-      try {
-        if (!galleryId) {
-          throw new Error('Gallery ID is missing or invalid.');
-        }
-
-        const gallery = await databases.getDocument(config.databaseId, config.galleriesCollectionId, galleryId);
-        setGalleryData(gallery);
-      } catch (error) {
-        console.error('Error fetching gallery details:', error);
-        Alert.alert('Error', 'Failed to load gallery details.');
-      } finally {
-        setLoading(false);
+  // Fetch gallery data
+  const fetchGallery = async () => {
+    try {
+      if (!galleryId) {
+        throw new Error('Gallery ID is missing or invalid.');
       }
-    };
 
+      setRefreshing(true); 
+      const gallery = await databases.getDocument(config.databaseId, config.galleriesCollectionId, galleryId);
+      setGalleryData(gallery);
+    } catch (error) {
+      console.error('Error fetching gallery details:', error);
+      Alert.alert('Error', 'Failed to load gallery details.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false); 
+    }
+  };
+
+  useEffect(() => {
     fetchGallery();
   }, [galleryId]);
 
@@ -69,6 +73,12 @@ const GalleryDetails = () => {
     }
   };
 
+  const handleUploadMedia = async () => {
+    await uploadMedia(galleryId, databases, config);
+    // After uploading, re-fetch gallery data to show the new images
+    await fetchGallery();
+  };
+
   if (loading) return <Text>Loading...</Text>;
   if (!galleryData) return <Text>No gallery found</Text>;
 
@@ -88,13 +98,13 @@ const GalleryDetails = () => {
           <TouchableOpacity
             onPress={() => {
               setIsMultiSelectMode(!isMultiSelectMode);
-              setSelectedImages([]); // Clear any existing selections when toggling mode
+              setSelectedImages([]); 
             }}
             style={{
-              padding: 6, // Reduced padding for smaller button
+              padding: 6,
               backgroundColor: isMultiSelectMode ? '#ff6347' : '#1e90ff',
               borderRadius: 5,
-              marginRight: 10, // Added space between settings and select button
+              marginRight: 10,
             }}
           >
             <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>
@@ -135,61 +145,62 @@ const GalleryDetails = () => {
       {/* Image Gallery */}
       {images.length > 0 && (
         <View style={{ paddingHorizontal: 2, marginTop: 10 }}>
-          <FlatList
-            data={images}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item, index }) => (
-              <TouchableOpacity
-                onPress={() => {
-                  if (!isMultiSelectMode) {
-                    setSelectedImageIndex(index);
-                    setModalVisible(true);
-                  } else {
-                    toggleSelectImage(item);
-                  }
-                }}
-                onLongPress={() => {
-                  if (!isMultiSelectMode) {
-                    setIsMultiSelectMode(true);
-                    toggleSelectImage(item);
-                  }
-                }}
-                style={{
-                  padding: 1, // Further reduced padding around each image
-                  borderWidth: selectedImages.includes(item) ? 1 : 0,
-                  borderColor: 'yellow',
-                  borderRadius: 5,
-                  marginBottom: 2,
-                }}
-              >
-                <Image
-                  source={{ uri: item }}
-                  style={{
-                    width: screenWidth / 3 - 6, // Increased image size
-                    height: screenWidth / 3 - 6, // Maintain uniform height
-                  }}
-                  resizeMode="cover" // Keeps images as large as possible within their space
-                />
-                {selectedImages.includes(item) && (
-                  <View style={{
-                    position: 'absolute',
-                    top: 5,
-                    right: 5,
-                    backgroundColor: 'rgba(0,0,0,0.6)',
-                    borderRadius: 12,
-                    padding: 2,
-                  }}>
-                    <Feather name="check" size={16} color="white" />
-                  </View>
-                )}
-              </TouchableOpacity>
-            )}
-            numColumns={3} // 3 columns for grid layout
-            columnWrapperStyle={{ justifyContent: 'space-between' }} // Ensures even spacing between columns
-            contentContainerStyle={{ paddingBottom: 16 }}
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
+  <FlatList
+    data={images}
+    keyExtractor={(item, index) => index.toString()}
+    renderItem={({ item, index }) => (
+      <TouchableOpacity
+        onPress={() => {
+          if (!isMultiSelectMode) {
+            setSelectedImageIndex(index);
+            setModalVisible(true);
+          } else {
+            toggleSelectImage(item);
+          }
+        }}
+        onLongPress={() => {
+          if (!isMultiSelectMode) {
+            setIsMultiSelectMode(true);
+            toggleSelectImage(item);
+          }
+        }}
+        style={{
+          margin: 1, // Uniform margin between images
+          borderWidth: selectedImages.includes(item) ? 1 : 0,
+          borderColor: 'yellow',
+          borderRadius: 5,
+        }}
+      >
+        <Image
+          source={{ uri: item }}
+          style={{
+            width: screenWidth / 3 - 2, // Take up full width of grid cell
+            height: screenWidth / 3 - 2, // Uniform height for all images
+          }}
+          resizeMode="cover" // Ensures that images fill the grid cells properly
+        />
+        {selectedImages.includes(item) && (
+          <View style={{
+            position: 'absolute',
+            top: 5,
+            right: 5,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderRadius: 12,
+            padding: 2,
+          }}>
+            <Feather name="check" size={16} color="white" />
+          </View>
+        )}
+      </TouchableOpacity>
+    )}
+    numColumns={3}
+    columnWrapperStyle={{ justifyContent: 'space-between' }} // Keep columns evenly spaced
+    contentContainerStyle={{ paddingBottom: 16 }}
+    showsVerticalScrollIndicator={false}
+    refreshing={refreshing} 
+    onRefresh={fetchGallery} // Allows the gallery to refresh on pull-down
+  />
+</View>
       )}
 
       {/* Export or Delete Selected Images Buttons */}
@@ -246,7 +257,7 @@ const GalleryDetails = () => {
       {/* Upload Action Button */}
       {newMedia.length > 0 && (
         <TouchableOpacity
-          onPress={() => uploadMedia(galleryId, databases, config)}
+          onPress={handleUploadMedia}
           disabled={uploading}
           style={{
             marginTop: 20,
@@ -279,7 +290,7 @@ const GalleryDetails = () => {
           </TouchableOpacity>
 
           <FlatList
-            data={images} // Keep the original 'images' order for consistent swiping
+            data={images}
             horizontal
             pagingEnabled
             keyExtractor={(item, index) => index.toString()}
@@ -296,7 +307,7 @@ const GalleryDetails = () => {
                     height: screenWidth * 1,
                     borderRadius: 3,
                   }}
-                  resizeMode="contain" // Maintain aspect ratio without cropping
+                  resizeMode="contain"
                 />
               </View>
             )}
