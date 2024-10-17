@@ -36,7 +36,6 @@ const GalleryDetails = () => {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        // Ensure galleryId is valid
         if (!galleryId) {
           throw new Error('Gallery ID is missing or invalid.');
         }
@@ -47,11 +46,7 @@ const GalleryDetails = () => {
       } catch (error) {
         console.error('Error fetching gallery details:', error);
 
-        // Retry only for specific errors, and stop after max retries
-        if (
-          error.message.includes('Document with the requested ID could not be found') &&
-          retryCount < maxRetries
-        ) {
+        if (error.message.includes('Document with the requested ID could not be found') && retryCount < maxRetries) {
           setTimeout(() => setRetryCount(retryCount + 1), 1000); // Retry after 1 second
         } else {
           Alert.alert('Error', 'Failed to load gallery details.');
@@ -64,7 +59,7 @@ const GalleryDetails = () => {
     if (retryCount <= maxRetries) {
       fetchGallery();
     }
-  }, [galleryId, retryCount]); // Retry based on retryCount state
+  }, [galleryId, retryCount]);
 
   const toggleSelectImage = (imageUri) => {
     if (selectedImages.includes(imageUri)) {
@@ -76,9 +71,6 @@ const GalleryDetails = () => {
 
   const handleDeleteGallery = async () => {
     try {
-      console.log('Gallery ID:', galleryId);
-      console.log('Collection ID:', config.galleriesCollectionId);
-
       await deleteGallery(config.galleriesCollectionId, galleryId, galleryData.images, galleryData.videos, galleryData.thumbnail);
       Alert.alert('Success', 'Gallery deleted successfully!');
       setDeleteModalVisible(false);
@@ -97,23 +89,52 @@ const GalleryDetails = () => {
 
   return (
     <SafeAreaView className="bg-primary h-full">
-      {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 16 }}>
-        <TouchableOpacity onPress={() => router.push('/galleries')}>
-          <Feather name="arrow-left" size={24} color="white" />
-        </TouchableOpacity>
-        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', flex: 1 }}>
-          {title}
+  {/* Header */}
+  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 16 }}>
+    {/* Arrow aligned to the left */}
+    <TouchableOpacity onPress={() => router.push('/galleries')}>
+      <Feather name="arrow-left" size={24} color="white" />
+    </TouchableOpacity>
+
+    {/* Right-side buttons */}
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      {/* Select button */}
+      <TouchableOpacity
+        onPress={() => {
+          setIsMultiSelectMode(!isMultiSelectMode);
+          setSelectedImages([]); // Clear any existing selections when toggling mode
+        }}
+        style={{
+          padding: 6,  // Reduced padding for smaller button
+          backgroundColor: isMultiSelectMode ? '#ff6347' : '#1e90ff',
+          borderRadius: 5,
+          marginRight: 10, // Added space between settings and select button
+        }}
+      >
+        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>
+          {isMultiSelectMode ? 'Cancel' : 'Select'}
         </Text>
-        <TouchableOpacity onPress={() => setSettingsModalVisible(true)}>
-          <Feather name="settings" size={24} color="white" />
+      </TouchableOpacity>
+
+      {/* Settings button */}
+      <TouchableOpacity className="p-2" onPress={() => setSettingsModalVisible(true)}>
+        <Feather name="settings" size={24} color="white" />
+      </TouchableOpacity>
+
+      {/* QR Code button */}
+      <View style={{ marginLeft: 10 }}>
+        <TouchableOpacity onPress={() => setQrModalVisible(true)}>
+          <MaterialIcons name="qr-code" size={24} color="white" />
         </TouchableOpacity>
-        <View style={{ margin: 5 }}>
-          <TouchableOpacity onPress={() => setQrModalVisible(true)}>
-            <MaterialIcons name="qr-code" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
       </View>
+    </View>
+  </View>
+
+
+      {/* Gallery Title */}
+<Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginTop: 5 }}>
+          {title}
+ </Text>
 
       {/* Event Date */}
       {eventDate && (
@@ -126,31 +147,11 @@ const GalleryDetails = () => {
         </Text>
       )}
 
-      {/* "Choose Many" Button */}
-      <View style={{ paddingHorizontal: 16, marginTop: 10 }}>
-        <TouchableOpacity 
-          onPress={() => {
-            setIsMultiSelectMode(!isMultiSelectMode);
-            setSelectedImages([]); // Clear any existing selections when toggling mode
-          }}
-          style={{
-            padding: 10,
-            backgroundColor: isMultiSelectMode ? '#ff6347' : '#1e90ff', // Change color based on mode
-            borderRadius: 5,
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>
-            {isMultiSelectMode ? 'Cancel Selection' : 'Choose Many'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       {/* Image Gallery */}
       {images.length > 0 && (
         <View style={{ paddingHorizontal: 16, marginTop: 24, height: (screenWidth / 3) * 3 + 30 }}>
           <FlatList
-            data={images} 
+            data={images}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item, index }) => (
               <TouchableOpacity
@@ -167,7 +168,7 @@ const GalleryDetails = () => {
                     setIsMultiSelectMode(true);
                     toggleSelectImage(item);
                   }
-                }} 
+                }}
                 style={{
                   borderWidth: selectedImages.includes(item) ? 2 : 0,
                   borderColor: 'yellow',
@@ -176,11 +177,11 @@ const GalleryDetails = () => {
               >
                 <Image
                   source={{ uri: item }}
-                  style={{ 
-                    width: screenWidth / 3 - 18, 
-                    height: screenWidth / 3 - 15, 
-                    margin: 5, 
-                    borderRadius: 10 
+                  style={{
+                    width: screenWidth / 3 - 18,
+                    height: screenWidth / 3 - 15,
+                    margin: 5,
+                    borderRadius: 10
                   }}
                   resizeMode="cover"
                 />
@@ -198,9 +199,9 @@ const GalleryDetails = () => {
                 )}
               </TouchableOpacity>
             )}
-            numColumns={3} // Three columns for grid layout
+            numColumns={3}
             contentContainerStyle={{ paddingBottom: 16 }}
-            showsVerticalScrollIndicator={false} // Hide the scroll bar for a cleaner look
+            showsVerticalScrollIndicator={false}
           />
         </View>
       )}
@@ -208,32 +209,30 @@ const GalleryDetails = () => {
       {/* Export or Delete Selected Images Buttons */}
       {isMultiSelectMode && selectedImages.length > 0 && (
         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 20 }}>
-          {/* Export Button */}
           <TouchableOpacity
             onPress={() => handleExportMultipleImages(selectedImages, setSelectedImages, setIsMultiSelectMode)}
-            style={{ 
-              padding: 16, 
-              backgroundColor: 'green', 
-              borderRadius: 10, 
-              width: 150 
+            style={{
+              padding: 16,
+              backgroundColor: 'green',
+              borderRadius: 10,
+              width: 150
             }}
           >
             <Text style={{ color: 'white', textAlign: 'center' }}>
               {`Export ${selectedImages.length} Image${selectedImages.length > 1 ? 's' : ''}`}
             </Text>
           </TouchableOpacity>
-          {/* Delete Button */}
           <TouchableOpacity
             onPress={async () => {
               await deleteImages(galleryId, selectedImages, images, setGalleryData);
-              setSelectedImages([]); // Reset selected images
-              setIsMultiSelectMode(false); // Exit multi-select mode
+              setSelectedImages([]);
+              setIsMultiSelectMode(false);
             }}
-            style={{ 
-              padding: 16, 
-              backgroundColor: 'red', 
-              borderRadius: 10, 
-              width: 150 
+            style={{
+              padding: 16,
+              backgroundColor: 'red',
+              borderRadius: 10,
+              width: 150
             }}
           >
             <Text style={{ color: 'white', textAlign: 'center' }}>
@@ -257,16 +256,16 @@ const GalleryDetails = () => {
 
       {/* Upload Media Button */}
       {newMedia.length > 0 && (
-        <TouchableOpacity 
-          onPress={() => uploadMedia(galleryId, databases, config)} 
-          disabled={uploading} 
-          style={{ 
-            marginTop: 20, 
-            padding: 16, 
-            backgroundColor: 'green', 
-            borderRadius: 10, 
-            width: 250, 
-            alignSelf: 'center' 
+        <TouchableOpacity
+          onPress={() => uploadMedia(galleryId, databases, config)}
+          disabled={uploading}
+          style={{
+            marginTop: 20,
+            padding: 16,
+            backgroundColor: 'green',
+            borderRadius: 10,
+            width: 250,
+            alignSelf: 'center'
           }}
         >
           <Text style={{ color: 'white', textAlign: 'center' }}>
@@ -277,14 +276,14 @@ const GalleryDetails = () => {
 
       {/* Image Modal */}
       <Modal visible={modalVisible} transparent={true} animationType="slide">
-        <View style={{ 
-          flex: 1, 
-          backgroundColor: 'rgba(0,0,0,0.8)', 
-          justifyContent: 'center', 
-          alignItems: 'center' 
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          justifyContent: 'center',
+          alignItems: 'center'
         }}>
-          <TouchableOpacity 
-            style={{ position: 'absolute', top: 60, right: 12, zIndex: 1 }} 
+          <TouchableOpacity
+            style={{ position: 'absolute', top: 60, right: 12, zIndex: 1 }}
             onPress={() => setModalVisible(false)}
           >
             <Feather name="x" size={35} color="white" />
@@ -296,17 +295,17 @@ const GalleryDetails = () => {
             pagingEnabled
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
-              <View style={{ 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                width: screenWidth 
+              <View style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: screenWidth
               }}>
                 <Image
                   source={{ uri: item }}
-                  style={{ 
-                    width: screenWidth, 
-                    height: screenWidth * 0.8, 
-                    borderRadius: 20 
+                  style={{
+                    width: screenWidth,
+                    height: screenWidth * 0.8,
+                    borderRadius: 20
                   }}
                   resizeMode="cover"
                 />
@@ -325,25 +324,23 @@ const GalleryDetails = () => {
             })}
           />
           <View style={{ flexDirection: 'row', marginBottom: 30 }}>
-            {/* Export Button */}
-            <TouchableOpacity 
-              onPress={() => handleExportImage(latestImages[selectedImageIndex])} 
-              style={{ 
-                padding: 10, 
-                backgroundColor: 'gray', 
-                borderRadius: 10, 
-                marginRight: 10 
+            <TouchableOpacity
+              onPress={() => handleExportImage(latestImages[selectedImageIndex])}
+              style={{
+                padding: 10,
+                backgroundColor: 'gray',
+                borderRadius: 10,
+                marginRight: 10
               }}
             >
               <Text style={{ color: 'white', fontSize: 16 }}>Export</Text>
             </TouchableOpacity>
-            {/* Delete Button */}
-            <TouchableOpacity 
-              onPress={() => deleteImages(galleryId, [latestImages[selectedImageIndex]], latestImages, setGalleryData)} 
-              style={{ 
-                padding: 10, 
-                backgroundColor: 'red', 
-                borderRadius: 10 
+            <TouchableOpacity
+              onPress={() => deleteImages(galleryId, [latestImages[selectedImageIndex]], latestImages, setGalleryData)}
+              style={{
+                padding: 10,
+                backgroundColor: 'red',
+                borderRadius: 10
               }}
             >
               <Text style={{ color: 'white', fontSize: 16 }}>Delete</Text>
@@ -360,18 +357,18 @@ const GalleryDetails = () => {
           onAccessPress={() => {
             setAccessModalVisible(true);
             setSettingsModalVisible(false);
-          }} 
+          }}
           onDeletePress={() => {
             setDeleteModalVisible(true);
             setSettingsModalVisible(false);
-          }} 
+          }}
         />
       )}
       {deleteModalVisible && (
         <DeleteModal
           visible={deleteModalVisible}
           onClose={() => setDeleteModalVisible(false)}
-          onDelete={handleDeleteGallery} 
+          onDelete={handleDeleteGallery}
         />
       )}
       {qrModalVisible && (
@@ -384,8 +381,8 @@ const GalleryDetails = () => {
       {accessModalVisible && (
         <AccessModal
           visible={accessModalVisible}
-          onClose={() => setAccessModalVisible(false)} 
-          galleryId={galleryId} 
+          onClose={() => setAccessModalVisible(false)}
+          galleryId={galleryId}
         />
       )}
     </SafeAreaView>

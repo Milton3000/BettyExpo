@@ -1,7 +1,5 @@
-// THIS ONE WORKS 100% TO UPLOAD THE IMAGES IN THEIR ORIGINAL SIZE. BUT THEY ARE EACH 4-5-6 MB IN SIZE. NOT GOOD FOR FUTURE.
-
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
@@ -11,54 +9,17 @@ import { router } from 'expo-router';
 import { createGallery } from '../../lib/appwrite'; // Updated to createGallery
 import { useGlobalContext } from '../../context/GlobalProvider';
 import * as ImageManipulator from 'expo-image-manipulator'; // Add ImageManipulator import
-import { fetchGalleries } from '../../lib/appwrite'; // Import fetchGalleries (ALSO OPTIONAL)
 import { StatusBar } from 'expo-status-bar';
-
-
 
 const CreateGallery = () => {
   const { user } = useGlobalContext();
   const [uploading, setUploading] = useState(false);
-  const [galleries, setGalleries] = useState([]);
   const [form, setForm] = useState({
     galleryTitle: "",
-    thumbnail: null,
+    thumbnail: null,  // Thumbnail is optional
     assets: [], // Store multiple assets
     assetType: null, // Track type (image or video)
   });
-
-  // Fetch galleries when the component mounts (OPTIONAL)
-  useEffect(() => {
-    const loadGalleries = async () => {
-      try {
-        const galleryList = await fetchGalleries();
-        setGalleries(galleryList);
-      } catch (error) {
-        console.error("Error fetching galleries:", error.message);
-      }
-    };
-
-    loadGalleries();
-  }, []);
-
-  const openPicker = async (selectType) => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: selectType === 'image' ? ImagePicker.MediaTypeOptions.Images : ImagePicker.MediaTypeOptions.Videos,
-      allowsMultipleSelection: true,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      // Set original assets directly (Skipping compression for debugging)
-      setForm({
-        ...form,
-        assets: result.assets, // Use original assets
-        assetType: selectType,
-      });
-    } else {
-      Alert.alert('No files selected');
-    }
-  };
 
   const openThumbnailPicker = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -78,8 +39,10 @@ const CreateGallery = () => {
       setForm({
         ...form,
         thumbnail: {
-          ...result.assets[0],
           uri: compressedThumbnail.uri, // Replace URI with the compressed image URI
+          name: result.assets[0].fileName || `thumbnail-${Date.now()}.jpg`, // Ensure fileName is present
+          type: 'image/jpeg',
+          size: compressedThumbnail.size || result.assets[0].fileSize, // Use the size or fallback
         },
       });
     } else {
@@ -87,98 +50,80 @@ const CreateGallery = () => {
     }
   };
 
-  const submit = async () => {
-    if (form.galleryTitle === "" || !form.thumbnail || form.assets.length === 0) {
-      return Alert.alert("Please provide all required fields");
+  // Function for opening image or video picker (Currently not in use)
+  const openPicker = async (selectType) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: selectType === 'image' ? ImagePicker.MediaTypeOptions.Images : ImagePicker.MediaTypeOptions.Videos,
+      allowsMultipleSelection: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      // Set original assets directly
+      setForm({
+        ...form,
+        assets: result.assets, // Use original assets
+        assetType: selectType,
+      });
+    } else {
+      Alert.alert('No files selected');
     }
-  
+  };
+
+  const submit = async () => {
+    if (form.galleryTitle === "") {
+      return Alert.alert("Please provide a gallery title");
+    }
+
     setUploading(true);
     try {
-      // Compress the thumbnail
-      let compressedThumbnail = form.thumbnail;
-      if (compressedThumbnail) {
+      // Prepare the data for gallery creation
+      let galleryData = {
+        title: form.galleryTitle,
+        userId: user.$id,
+        assets: [], // Explicitly sending an empty array for assets to prevent backend errors
+      };
+
+      // If a thumbnail is present, include it in the gallery data
+      if (form.thumbnail) {
         const compressedImage = await ImageManipulator.manipulateAsync(
-          compressedThumbnail.uri,
+          form.thumbnail.uri,
           [{ resize: { width: 1000 } }], // Resize to 1000px width
           { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
         );
-  
-        // Set file metadata for the thumbnail
-        const thumbnailName = compressedThumbnail.fileName || `thumbnail-${Date.now()}.jpg`;
-        compressedThumbnail = {
-          ...compressedThumbnail,
+
+        galleryData.thumbnail = {
           uri: compressedImage.uri,
-          name: thumbnailName,
+          name: form.thumbnail.name,
           type: 'image/jpeg',
-          size: compressedImage.size || compressedThumbnail.size,
+          size: compressedImage.size || form.thumbnail.size,
         };
       }
-  
-      // Compress each asset if the assetType is 'image'
-      let compressedAssets = form.assets;
-      if (form.assetType === 'image') {
-        compressedAssets = await Promise.all(
-          form.assets.map(async (asset) => {
-            const compressedImage = await ImageManipulator.manipulateAsync(
-              asset.uri,
-              [{ resize: { width: 1000 } }], // Resize to 1000px width
-              { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
-            );
-  
-            // Set file metadata for each asset
-            const assetName = asset.fileName || `asset-${Date.now()}.jpg`;
-            return {
-              ...asset,
-              uri: compressedImage.uri,
-              name: assetName,
-              type: 'image/jpeg',
-              size: compressedImage.size || asset.size,
-            };
-          })
-        );
-      }
-  
-      // Log the file details for debugging
-      console.log('Thumbnail being uploaded:', compressedThumbnail);
-      console.log('Assets being uploaded:', compressedAssets);
-  
-      // Create the gallery with the compressed thumbnail and assets
-      const { newGallery } = await createGallery({
-        title: form.galleryTitle,
-        thumbnail: compressedThumbnail,
-        assets: compressedAssets,
-        assetType: form.assetType,
-        userId: user.$id,
-      });
-  
-      // Optimistic update for instant feedback
-      setGalleries((prevGalleries) => [...prevGalleries, newGallery]);
-  
-      // Fetch new galleries in the background
-      fetchGalleries().then((updatedGalleries) => {
-        setGalleries(updatedGalleries);
-      });
-  
+
+      // Log the data for debugging
+      console.log('Gallery being created:', galleryData);
+
+      // Create the gallery with the given data
+      const { newGallery } = await createGallery(galleryData);
+
       Alert.alert("Success", "Gallery created successfully");
       router.push("/galleries");
     } catch (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert("Error creating gallery:", error.message);
     } finally {
       setForm({
         galleryTitle: "",
         thumbnail: null,
-        assets: [],
+        assets: [], // Reset assets
         assetType: null,
       });
       setUploading(false);
     }
   };
-  
-
 
   return (
-<SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
-<StatusBar style="light" backgroundColor="#161622" />
+    <SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
+      <StatusBar style="light" backgroundColor="#161622" />
       <ScrollView className="px-4 my-6">
         <Text className="text-2xl text-white font-psemibold">Create a Gallery</Text>
         <FormField
@@ -208,7 +153,8 @@ const CreateGallery = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Asset Picker (Images or Videos) */}
+        {/* Asset Picker Section (Commented out for future use) */}
+        {/* 
         <View className="mt-7 space-y-4">
           <Text className="text-base text-gray-100 font-pmedium">
             Upload {form.assetType ? form.assetType === "image" ? "Images" : "Videos" : "Images or Videos"}
@@ -234,6 +180,7 @@ const CreateGallery = () => {
             )}
           </TouchableOpacity>
         </View>
+        */}
 
         <CustomButton 
           title="Submit Gallery"
@@ -247,6 +194,8 @@ const CreateGallery = () => {
 };
 
 export default CreateGallery;
+
+
 
 
 
