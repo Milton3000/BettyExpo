@@ -1,26 +1,34 @@
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator'; // Import the image manipulation library for compression
 import { Alert } from 'react-native';
-import { addImagesToGallery, addVideosToGallery, uploadFile } from '../lib/appwrite';
+import { addImagesToGallery, uploadFile } from '../lib/appwrite'; // Removed addVideosToGallery
 
 export const useUploadMedia = () => {
   const [newMedia, setNewMedia] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [mediaType, setMediaType] = useState(null);
 
-  const openPicker = async (selectType) => {
+  const openPicker = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: selectType === 'image' ? ImagePicker.MediaTypeOptions.Images : ImagePicker.MediaTypeOptions.Videos,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Allow only images
       allowsMultipleSelection: true,
       quality: 1,
     });
 
     if (!result.canceled) {
       setNewMedia(result.assets);
-      setMediaType(selectType);
     } else {
       Alert.alert('No files selected');
     }
+  };
+
+  const compressImage = async (imageUri) => {
+    const manipResult = await ImageManipulator.manipulateAsync(
+      imageUri,
+      [{ resize: { width: 800 } }], // Resize the image for compression
+      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Set compression level and format
+    );
+    return manipResult.uri;
   };
 
   const uploadMedia = async (galleryId, databases, config) => {
@@ -33,6 +41,9 @@ export const useUploadMedia = () => {
     try {
       const mediaUrls = await Promise.all(newMedia.map(async (media) => {
         let fileUri = media.uri;
+
+        // Compress the image before uploading
+        fileUri = await compressImage(media.uri);
 
         const fileName = media.fileName || fileUri.split('/').pop();
         const mimeType = media.mimeType || 'image/jpeg';
@@ -49,13 +60,10 @@ export const useUploadMedia = () => {
         return fileUrl;
       }));
 
-      if (mediaType === 'image') {
-        await addImagesToGallery(galleryId, mediaUrls);
-      } else {
-        await addVideosToGallery(galleryId, mediaUrls);
-      }
+      // Add the images to the gallery
+      await addImagesToGallery(galleryId, mediaUrls);
 
-      Alert.alert('Success', 'Media uploaded successfully!');
+      Alert.alert('Success', 'Images uploaded successfully!');
     } catch (error) {
       console.error('Error uploading media:', error.message || error);
       Alert.alert('Error', error.message || 'Failed to upload media.');
