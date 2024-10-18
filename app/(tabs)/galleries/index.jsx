@@ -1,4 +1,4 @@
-import { View, FlatList, TouchableOpacity, Image, Text, RefreshControl } from 'react-native';
+import { View, FlatList, TouchableOpacity, Image, Text, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getUserGalleries } from '../../../lib/appwrite'; // Replace with getUserGalleries
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -11,34 +11,46 @@ const Galleries = () => {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
-  const fetchGalleries = async () => {
+  // Fetch galleries with error handling and retry logic
+  const fetchGalleriesWithRetry = async (retryCount = 3) => {
     try {
-      // Fetch galleries for the current user
-      const userGalleries = await getUserGalleries(user.$id); // Fetch galleries for the current user
-  
-      // Sort galleries by creation date in descending order (newest first)
-      const sortedGalleries = userGalleries.sort((a, b) => new Date(b.$createdAt) - new Date(a.$createdAt));
-  
+      const userGalleries = await getUserGalleries(user.$id);
+
+      // Filter valid galleries and sort them by creation date
+      const validGalleries = userGalleries.filter((gallery) => !!gallery);
+      const sortedGalleries = validGalleries.sort((a, b) => new Date(b.$createdAt) - new Date(a.$createdAt));
+
       setGalleries(sortedGalleries);
     } catch (error) {
-      console.error("Error fetching galleries:", error);
+      if (retryCount > 0) {
+        console.warn(`Retrying to fetch galleries, ${retryCount} retries left.`);
+        await new Promise(resolve => setTimeout(resolve, 500)); // Delay between retries
+        fetchGalleriesWithRetry(retryCount - 1);
+      } else {
+        console.error("Error fetching galleries:", error.message);
+        Alert.alert("Error", "Failed to load galleries after multiple attempts.");
+      }
     }
-  };  
+  };
 
   useFocusEffect(
     useCallback(() => {
-      fetchGalleries();
+      fetchGalleriesWithRetry();
     }, [user]) // Ensure it refetches when user changes
   );
 
   const onRefresh = async () => {
     setRefreshing(true);
     await new Promise(resolve => setTimeout(resolve, 200)); // Delay for testing refresh spinner
-    await fetchGalleries();
+    await fetchGalleriesWithRetry();
     setRefreshing(false);
   };
 
   const handleGalleryPress = (gallery) => {
+    if (!gallery || !gallery.$id) {
+      Alert.alert("Error", "Gallery not found.");
+      return;
+    }
     router.push(`/galleries/${gallery.$id}`);
   };
 
