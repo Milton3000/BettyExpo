@@ -32,7 +32,7 @@ const SignUp = () => {
       setUser(result);
       setIsLogged(true);
 
-      router.replace("/create");
+      router.replace("/galleries");  // Redirect to galleries page
     } catch (error) {
       Alert.alert("Error", error.message);
     } finally {
