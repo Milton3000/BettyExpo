@@ -106,7 +106,7 @@ const CreateGallery = () => {
       // Create the gallery with the given data
       const { newGallery } = await createGallery(galleryData);
 
-      Alert.alert("Success", "Gallery created successfully");
+      // Alert.alert("Success", "Gallery created successfully");
       router.push("/galleries");
     } catch (error) {
       Alert.alert("Error creating gallery:", error.message);

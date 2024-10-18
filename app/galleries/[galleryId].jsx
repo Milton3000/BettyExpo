@@ -34,44 +34,63 @@ const GalleryDetails = () => {
   const fetchGallery = async () => {
     try {
       if (!galleryId) {
-        throw new Error('Gallery ID is missing or invalid.');
+        console.warn('No galleryId provided or galleryId is invalid. Skipping fetch.');
+        return;
       }
-
-      setRefreshing(true); 
+  
+      // console.log('Attempting to fetch gallery with ID:', galleryId);
+      setRefreshing(true);
+  
+      // Check if gallery still exists
+      const galleryList = await databases.listDocuments(config.databaseId, config.galleriesCollectionId);
+      const galleryExists = galleryList.documents.some((doc) => doc.$id === galleryId);
+  
+      if (!galleryExists) {
+        console.log(`Gallery with ID ${galleryId} no longer exists. Skipping fetch.`);
+        setGalleryData(null); // Optionally reset state
+        return;
+      }
+  
       const gallery = await databases.getDocument(config.databaseId, config.galleriesCollectionId, galleryId);
       setGalleryData(gallery);
     } catch (error) {
       console.error('Error fetching gallery details:', error);
-      Alert.alert('Error', 'Failed to load gallery details.');
+      if (error.message.includes('Document with the requested ID could not be found')) {
+        Alert.alert('Error', 'The requested gallery does not exist.');
+      } else {
+        Alert.alert('Error', 'Failed to load gallery details.');
+      }
     } finally {
       setLoading(false);
-      setRefreshing(false); 
+      setRefreshing(false);
     }
   };
+  
 
   useEffect(() => {
-    fetchGallery();
-  }, [galleryId]);
-
-  const toggleSelectImage = (imageUri) => {
-    if (selectedImages.includes(imageUri)) {
-      setSelectedImages(selectedImages.filter((img) => img !== imageUri));
+    if (galleryId && galleryId !== "") {
+      // console.log('Fetching gallery details for galleryId:', galleryId);
+      fetchGallery();
     } else {
-      setSelectedImages([...selectedImages, imageUri]);
+      console.warn('Invalid or empty galleryId. Skipping fetch.');
     }
-  };
+  }, [galleryId]); // Only run when galleryId changes
+  
+  
 
   const handleDeleteGallery = async () => {
     try {
       await deleteGallery(config.galleriesCollectionId, galleryId, galleryData.images, galleryData.thumbnail);
-      // Alert.alert('Success', 'Gallery deleted successfully!');
-      setDeleteModalVisible(false);
-      router.push('/galleries');
+  
+      // Clear gallery data and navigate to another screen
+      setGalleryData(null);
+      router.push('/galleries'); // Navigate back to galleries
     } catch (error) {
       Alert.alert('Error', `Failed to delete gallery: ${error.message}`);
       console.error('Error deleting gallery:', error);
     }
   };
+  
 
   const handleUploadMedia = async () => {
     await uploadMedia(galleryId, databases, config);

@@ -63,7 +63,7 @@ export const useUploadMedia = () => {
       // Add the images to the gallery
       await addImagesToGallery(galleryId, mediaUrls);
 
-      Alert.alert('Success', 'Images uploaded successfully!');
+      // Alert.alert('Success', 'Images uploaded successfully!');
     } catch (error) {
       console.error('Error uploading media:', error.message || error);
       Alert.alert('Error', error.message || 'Failed to upload media.');
