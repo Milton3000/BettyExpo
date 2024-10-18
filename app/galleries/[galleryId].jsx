@@ -64,7 +64,7 @@ const GalleryDetails = () => {
   const handleDeleteGallery = async () => {
     try {
       await deleteGallery(config.galleriesCollectionId, galleryId, galleryData.images, galleryData.thumbnail);
-      Alert.alert('Success', 'Gallery deleted successfully!');
+      // Alert.alert('Success', 'Gallery deleted successfully!');
       setDeleteModalVisible(false);
       router.push('/galleries');
     } catch (error) {
@@ -356,17 +356,20 @@ const GalleryDetails = () => {
       {/* Modals */}
       {settingsModalVisible && (
         <SettingsModal
-          visible={settingsModalVisible}
-          onClose={() => setSettingsModalVisible(false)}
-          onAccessPress={() => {
-            setAccessModalVisible(true);
-            setSettingsModalVisible(false);
-          }}
-          onDeletePress={() => {
-            setDeleteModalVisible(true);
-            setSettingsModalVisible(false);
-          }}
-        />
+  visible={settingsModalVisible}
+  onClose={() => setSettingsModalVisible(false)}
+  onAccessPress={() => {
+    setAccessModalVisible(true);
+    setSettingsModalVisible(false);
+  }}
+  onDeletePress={() => {
+    setDeleteModalVisible(true);
+    setSettingsModalVisible(false);
+  }}
+  galleryId={galleryId} // Pass the galleryId prop
+  onThumbnailUpdated={() => fetchGallery()} // Ensure the gallery refreshes after update
+/>
+
       )}
       {deleteModalVisible && (
         <DeleteModal

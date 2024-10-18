@@ -5,7 +5,7 @@ const DeleteModal = ({ visible, onClose, onDelete }) => {
   const handleDelete = async () => {
     try {
       await onDelete();
-      Alert.alert('Success', 'Gallery deleted successfully!');
+      // Alert.alert('Success', 'Gallery deleted successfully!');
       onClose(); // Close modal after deletion
     } catch (error) {
       Alert.alert('Error', `Failed to delete gallery: ${error.message}`);
