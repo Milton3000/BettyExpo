@@ -18,7 +18,7 @@ export const useUploadMedia = () => {
     if (!result.canceled) {
       setNewMedia(result.assets);
     } else {
-      Alert.alert('No files selected');
+      // Alert.alert('No files selected');
     }
   };
 

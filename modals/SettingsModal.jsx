@@ -34,7 +34,7 @@ const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, gallery
   // Compress and upload the new thumbnail
   const handleUploadThumbnail = async () => {
     if (!selectedThumbnail) {
-      return Alert.alert('No thumbnail selected', 'Please select a thumbnail first.');
+      // return Alert.alert('No thumbnail selected', 'Please select a thumbnail first.');
     }
 
     try {

@@ -46,7 +46,7 @@ const CreateGallery = () => {
         },
       });
     } else {
-      Alert.alert('No thumbnail selected');
+      // Alert.alert('No thumbnail selected');
     }
   };
 
