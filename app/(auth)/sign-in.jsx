@@ -1,4 +1,4 @@
-import { View, Text, Image, Alert } from 'react-native';
+import { View, Text, Image, Alert, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; // New Import
@@ -46,6 +46,10 @@ const SignIn = () => {
       setSubmitting(false);
     }
   };
+
+  const handleForgotPassword = () => {
+    router.push("/forgot-password");
+  };
   
   return (
     <SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
@@ -87,12 +91,17 @@ const SignIn = () => {
             containerStyles={{ marginTop: 30 }}
             isLoading={isSubmitting}
           />
+
+          {/* Sign-Up and Forgot Password Links */}
           <View style={{ justifyContent: 'center', flexDirection: 'row', marginTop: 20 }}>
             <Text style={{ color: '#aaa' }}>Don't have an account?</Text>
             <Link href="/sign-up" style={{ marginLeft: 5, color: '#6200EE', fontWeight: 'bold' }}>
               Sign Up
             </Link>
           </View>
+          <TouchableOpacity onPress={handleForgotPassword} style={{ marginTop: 15, alignSelf: 'center' }}>
+            <Text style={{ color: '#6200EE', fontWeight: 'bold' }}>Forgot Password?</Text>
+          </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
     </SafeAreaView>

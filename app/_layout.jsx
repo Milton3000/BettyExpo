@@ -36,6 +36,7 @@ const RootLayout = () => {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="galleries/[galleryId]" options={{ headerShown: false }} />
+        <Stack.Screen name="forgot-password" options={{ title: "Forgot Password" }} />
       </Stack>
     </GlobalProvider>
   )
