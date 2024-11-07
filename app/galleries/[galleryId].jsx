@@ -104,20 +104,44 @@ const GalleryDetails = () => {
 
   const handleDeleteGallery = async () => {
     try {
-      await deleteGallery(
-        config.galleriesCollectionId,
-        galleryId,
-        galleryData.images,
-        galleryData.thumbnail
-      );
-      setGalleryData(null);
-      setDeletedGalleries((prev) => [...prev, galleryId]);
-      router.push("/galleries");
+      // Ensure galleryData, images, and thumbnail are valid, setting defaults if necessary
+      const imagesToDelete = galleryData?.images ?? [];
+      const thumbnailToDelete = galleryData?.thumbnail; // Undefined if null
+  
+      // Logging for debugging
+      console.log("Attempting to delete gallery with the following data:");
+      console.log("Gallery ID:", galleryId);
+      console.log("Images to delete:", imagesToDelete);
+      console.log("Thumbnail to delete:", thumbnailToDelete);
+  
+      // Call deleteGallery with conditional arguments
+      if (thumbnailToDelete) {
+        await deleteGallery(
+          config.galleriesCollectionId,
+          galleryId,
+          imagesToDelete,
+          thumbnailToDelete
+        );
+      } else {
+        await deleteGallery(
+          config.galleriesCollectionId,
+          galleryId,
+          imagesToDelete
+        );
+      }
+  
+      // Clear gallery data and track deletion
+      setGalleryData(null); 
+      setDeletedGalleries((prev) => [...prev, galleryId]); 
+      router.push("/galleries"); 
+  
     } catch (error) {
+      console.error("Error deleting gallery:", error);
       Alert.alert("Error", `Failed to delete gallery: ${error.message}`);
     }
   };
-
+  
+  
   const handleUploadMedia = async () => {
     await uploadMedia(galleryId, databases, config);
     await fetchGallery();
