@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, Alert, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; // Import KeyboardAwareScrollView
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { sendPasswordResetEmail } from '../../lib/appwrite';
-import { images } from "../../constants";  // Assuming images are in the constants folder
+import { images } from "../../constants";
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
@@ -35,16 +35,28 @@ const ForgotPassword = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#161622' }}>
       {/* Go Back Arrow */}
-      <TouchableOpacity onPress={() => router.back()} style={{ position: 'absolute', top: 52, left: 15 }}>
+      <TouchableOpacity
+        onPress={() => {
+          router.back();
+        }}
+        style={{
+          position: 'absolute',
+          top: 50,
+          left: 15,
+          zIndex: 10, // Ensure this is on top of other elements
+          padding: 5, // Make it easier to tap
+          backgroundColor: 'rgba(0, 0, 0, 0.3)', // Temporary background for visibility
+          borderRadius: 20, // Optional: round the background
+        }}
+      >
         <Feather name="arrow-left" size={24} color="white" />
       </TouchableOpacity>
 
       <KeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
-        enableOnAndroid={true}  // Enables keyboard scrolling on Android
-        extraHeight={300}  // Adjusts the height to move content when the keyboard opens
+        enableOnAndroid={true}
+        extraHeight={300}
       >
-        {/* Logo and Title */}
         <View style={{ alignItems: 'center', marginBottom: 20 }}>
           <Image
             source={images.bettylogo4}
@@ -56,7 +68,6 @@ const ForgotPassword = () => {
           </Text>
         </View>
 
-        {/* Form and Reset Button */}
         <View style={{ paddingHorizontal: 20 }}>
           <FormField
             title="Email"

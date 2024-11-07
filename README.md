@@ -172,3 +172,6 @@ export const getAllPosts = async () => {
 
 
        npm uninstall expo-dev-client FÖR ATT SKIPPA DEVELOPMENT BRANCH I EXPO
+
+
+       eas update för att få qr kod
