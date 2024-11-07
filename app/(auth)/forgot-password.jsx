@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { View, Text, Alert, Image, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import FormField from '../../components/FormField';
-import CustomButton from '../../components/CustomButton';
-import { sendPasswordResetEmail } from '../../lib/appwrite';
+import React, { useState } from "react";
+import { View, Text, Alert, Image, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import FormField from "../../components/FormField";
+import CustomButton from "../../components/CustomButton";
+import { sendPasswordResetEmail } from "../../lib/appwrite";
 import { images } from "../../constants";
-import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { useRouter } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -19,7 +19,7 @@ const ForgotPassword = () => {
       Alert.alert("Error", "Please enter your email");
       return;
     }
-    
+
     setIsSubmitting(true);
 
     try {
@@ -33,19 +33,19 @@ const ForgotPassword = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#161622' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#161622" }}>
       {/* Go Back Arrow */}
       <TouchableOpacity
         onPress={() => {
           router.back();
         }}
         style={{
-          position: 'absolute',
-          top: 50,
+          position: "absolute",
+          top: 52,
           left: 15,
           zIndex: 10, // Ensure this is on top of other elements
           padding: 5, // Make it easier to tap
-          backgroundColor: 'rgba(0, 0, 0, 0.3)', // Temporary background for visibility
+          backgroundColor: "rgba(0, 0, 0, 0.3)", // Temporary background for visibility
           borderRadius: 20, // Optional: round the background
         }}
       >
@@ -53,17 +53,25 @@ const ForgotPassword = () => {
       </TouchableOpacity>
 
       <KeyboardAwareScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         enableOnAndroid={true}
         extraHeight={300}
       >
-        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
           <Image
             source={images.bettylogo4}
             resizeMode="contain"
             style={{ width: 155, height: 155 }}
           />
-          <Text style={{ color: 'white', fontSize: 24, fontWeight: '600', textAlign: 'center', marginTop: -40 }}>
+          <Text
+            style={{
+              color: "white",
+              fontSize: 24,
+              fontWeight: "600",
+              textAlign: "center",
+              marginTop: -40,
+            }}
+          >
             Forgot Password
           </Text>
         </View>

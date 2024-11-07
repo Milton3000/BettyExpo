@@ -1,16 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { View, FlatList, Image, Text, TouchableOpacity, Dimensions, Modal, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialIcons, AntDesign } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import SettingsModal from '../../modals/SettingsModal';
-import DeleteModal from '../../modals/DeleteModal';
-import QRModal from '../../modals/QRModal';
-import AccessModal from '../../modals/AccessModal';
-import { useUploadMedia } from '../../hooks/useUploadMedia';
-import { deleteImages } from '../../components/DeleteImage'; 
-import { handleExportImage, handleExportMultipleImages } from '../../utils/mediaUtils';
-import { databases, config, deleteGallery } from '../../lib/appwrite';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  FlatList,
+  Image,
+  Text,
+  TouchableOpacity,
+  Dimensions,
+  Modal,
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Feather, MaterialIcons, AntDesign } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import SettingsModal from "../../modals/SettingsModal";
+import DeleteModal from "../../modals/DeleteModal";
+import QRModal from "../../modals/QRModal";
+import AccessModal from "../../modals/AccessModal";
+import { useUploadMedia } from "../../hooks/useUploadMedia";
+import { deleteImages } from "../../components/DeleteImage";
+import {
+  handleExportImage,
+  handleExportMultipleImages,
+} from "../../utils/mediaUtils";
+import { databases, config, deleteGallery } from "../../lib/appwrite";
 
 const GalleryDetails = () => {
   const { galleryId } = useLocalSearchParams();
@@ -29,7 +41,7 @@ const GalleryDetails = () => {
   const [deletedGalleries, setDeletedGalleries] = useState([]);
 
   const { uploadMedia, newMedia, openPicker, uploading } = useUploadMedia();
-  const screenWidth = Dimensions.get('window').width;
+  const screenWidth = Dimensions.get("window").width;
 
   // Fetch gallery data
   const fetchGallery = async () => {
@@ -37,8 +49,13 @@ const GalleryDetails = () => {
       if (!galleryId || deletedGalleries.includes(galleryId)) return;
 
       setRefreshing(true);
-      const galleryList = await databases.listDocuments(config.databaseId, config.galleriesCollectionId);
-      const galleryExists = galleryList.documents.some((doc) => doc.$id === galleryId);
+      const galleryList = await databases.listDocuments(
+        config.databaseId,
+        config.galleriesCollectionId
+      );
+      const galleryExists = galleryList.documents.some(
+        (doc) => doc.$id === galleryId
+      );
 
       if (!galleryExists) {
         setGalleryData(null);
@@ -46,15 +63,23 @@ const GalleryDetails = () => {
         return;
       }
 
-      const gallery = await databases.getDocument(config.databaseId, config.galleriesCollectionId, galleryId);
+      const gallery = await databases.getDocument(
+        config.databaseId,
+        config.galleriesCollectionId,
+        galleryId
+      );
       setGalleryData(gallery);
       // console.log("Fetched Images Array:", gallery.images); // Log for debugging
     } catch (error) {
-      if (error.message.includes('Document with the requested ID could not be found')) {
-        Alert.alert('Error', 'The requested gallery does not exist.');
+      if (
+        error.message.includes(
+          "Document with the requested ID could not be found"
+        )
+      ) {
+        Alert.alert("Error", "The requested gallery does not exist.");
         setDeletedGalleries((prev) => [...prev, galleryId]);
       } else {
-        Alert.alert('Error', 'Failed to load gallery details.');
+        Alert.alert("Error", "Failed to load gallery details.");
       }
     } finally {
       setLoading(false);
@@ -79,12 +104,17 @@ const GalleryDetails = () => {
 
   const handleDeleteGallery = async () => {
     try {
-      await deleteGallery(config.galleriesCollectionId, galleryId, galleryData.images, galleryData.thumbnail);
+      await deleteGallery(
+        config.galleriesCollectionId,
+        galleryId,
+        galleryData.images,
+        galleryData.thumbnail
+      );
       setGalleryData(null);
       setDeletedGalleries((prev) => [...prev, galleryId]);
-      router.push('/galleries');
+      router.push("/galleries");
     } catch (error) {
-      Alert.alert('Error', `Failed to delete gallery: ${error.message}`);
+      Alert.alert("Error", `Failed to delete gallery: ${error.message}`);
     }
   };
 
@@ -99,16 +129,32 @@ const GalleryDetails = () => {
   const { title, images = [], eventDate } = galleryData;
 
   // Prepare images array, filtering out falsy values and re-indexing
-  const filteredImages = images.filter(Boolean).map((img, index) => ({ uri: img, id: index.toString() }));
+  const filteredImages = images
+    .filter(Boolean)
+    .map((img, index) => ({ uri: img, id: index.toString() }));
 
   return (
     <SafeAreaView className="bg-primary h-full">
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 16 }}>
-        <TouchableOpacity onPress={() => router.push('/galleries')}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 16,
+          marginTop: 16,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.push("/galleries")}
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.3)", // Temporary background for visibility
+            borderRadius: 20, // Optional: round the background
+          }}
+        >
           <Feather name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity
             onPress={() => {
               setIsMultiSelectMode(!isMultiSelectMode);
@@ -116,13 +162,13 @@ const GalleryDetails = () => {
             }}
             style={{
               padding: 6,
-              backgroundColor: isMultiSelectMode ? '#ff6347' : '#1e90ff',
+              backgroundColor: isMultiSelectMode ? "#ff6347" : "#1e90ff",
               borderRadius: 5,
               marginRight: 10,
             }}
           >
-            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>
-              {isMultiSelectMode ? 'Cancel' : 'Select'}
+            <Text style={{ color: "white", fontWeight: "bold", fontSize: 12 }}>
+              {isMultiSelectMode ? "Cancel" : "Select"}
             </Text>
           </TouchableOpacity>
 
@@ -130,16 +176,34 @@ const GalleryDetails = () => {
             <Feather name="settings" size={24} color="white" />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setQrModalVisible(true)} style={{ marginLeft: 10 }}>
+          <TouchableOpacity
+            onPress={() => setQrModalVisible(true)}
+            style={{ marginLeft: 10 }}
+          >
             <MaterialIcons name="qr-code" size={24} color="white" />
           </TouchableOpacity>
         </View>
       </View>
 
-      <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginTop: 5 }}>{title}</Text>
+      <Text
+        style={{
+          color: "white",
+          fontSize: 18,
+          fontWeight: "bold",
+          textAlign: "center",
+          marginTop: 5,
+        }}
+      >
+        {title}
+      </Text>
       {eventDate && (
-        <Text style={{ color: 'gray', textAlign: 'center', marginTop: 8 }}>
-          Created on: {new Date(eventDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+        <Text style={{ color: "gray", textAlign: "center", marginTop: 8 }}>
+          Created on:{" "}
+          {new Date(eventDate).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
         </Text>
       )}
 
@@ -166,7 +230,7 @@ const GalleryDetails = () => {
             style={{
               margin: 1,
               borderWidth: selectedImages.includes(item.uri) ? 1 : 0,
-              borderColor: 'yellow',
+              borderColor: "yellow",
               borderRadius: 5,
             }}
           >
@@ -179,21 +243,23 @@ const GalleryDetails = () => {
               resizeMode="cover"
             />
             {selectedImages.includes(item.uri) && (
-              <View style={{
-                position: 'absolute',
-                top: 5,
-                right: 5,
-                backgroundColor: 'rgba(0,0,0,0.6)',
-                borderRadius: 12,
-                padding: 2,
-              }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: 5,
+                  right: 5,
+                  backgroundColor: "rgba(0,0,0,0.6)",
+                  borderRadius: 12,
+                  padding: 2,
+                }}
+              >
                 <Feather name="check" size={16} color="white" />
               </View>
             )}
           </TouchableOpacity>
         )}
         numColumns={3}
-        columnWrapperStyle={{ justifyContent: 'space-between' }}
+        columnWrapperStyle={{ justifyContent: "space-between" }}
         showsVerticalScrollIndicator={false}
         refreshing={refreshing}
         onRefresh={fetchGallery}
@@ -201,42 +267,67 @@ const GalleryDetails = () => {
       />
 
       {/* Action Buttons */}
-      <View style={{ marginTop: 10, alignItems: 'center' }}>
+      <View style={{ marginTop: 10, alignItems: "center" }}>
         {isMultiSelectMode && selectedImages.length > 0 && (
-          <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginBottom: 10 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-evenly",
+              marginBottom: 10,
+            }}
+          >
             <TouchableOpacity
-              onPress={() => handleExportMultipleImages(selectedImages, setSelectedImages, setIsMultiSelectMode)}
+              onPress={() =>
+                handleExportMultipleImages(
+                  selectedImages,
+                  setSelectedImages,
+                  setIsMultiSelectMode
+                )
+              }
               style={{
                 padding: 16,
-                backgroundColor: 'gray',
+                backgroundColor: "gray",
                 borderRadius: 10,
                 width: 150,
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
               <AntDesign name="download" size={18} color="white" />
-              <Text style={{ color: 'white', textAlign: 'center', marginLeft: 8 }}>{selectedImages.length}</Text>
+              <Text
+                style={{ color: "white", textAlign: "center", marginLeft: 8 }}
+              >
+                {selectedImages.length}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={async () => {
-                await deleteImages(galleryId, selectedImages, images, setGalleryData);
+                await deleteImages(
+                  galleryId,
+                  selectedImages,
+                  images,
+                  setGalleryData
+                );
                 setSelectedImages([]);
                 setIsMultiSelectMode(false);
               }}
               style={{
                 padding: 16,
-                backgroundColor: 'red',
+                backgroundColor: "red",
                 borderRadius: 10,
                 width: 150,
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
               <Feather name="trash" size={18} color="white" />
-              <Text style={{ color: 'white', textAlign: 'center', marginLeft: 8 }}>{selectedImages.length}</Text>
+              <Text
+                style={{ color: "white", textAlign: "center", marginLeft: 8 }}
+              >
+                {selectedImages.length}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -254,28 +345,34 @@ const GalleryDetails = () => {
             disabled={uploading}
             style={{
               padding: 16,
-              backgroundColor: 'green',
+              backgroundColor: "green",
               borderRadius: 10,
               width: 250,
-              alignSelf: 'center'
+              alignSelf: "center",
             }}
           >
-            <Text style={{ color: 'white', textAlign: 'center' }}>
-              {uploading ? 'Uploading...' : `Upload ${newMedia.length} Image${newMedia.length > 1 ? 's' : ''}`}
+            <Text style={{ color: "white", textAlign: "center" }}>
+              {uploading
+                ? "Uploading..."
+                : `Upload ${newMedia.length} Image${
+                    newMedia.length > 1 ? "s" : ""
+                  }`}
             </Text>
           </TouchableOpacity>
         )}
       </View>
 
       <Modal visible={modalVisible} transparent={true} animationType="slide">
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.8)',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.8)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <TouchableOpacity
-            style={{ position: 'absolute', top: 60, right: 12, zIndex: 1 }}
+            style={{ position: "absolute", top: 60, right: 12, zIndex: 1 }}
             onPress={() => setModalVisible(false)}
           >
             <Feather name="x" size={35} color="white" />
@@ -287,11 +384,13 @@ const GalleryDetails = () => {
             pagingEnabled
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
-              <View style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: screenWidth
-              }}>
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: screenWidth,
+                }}
+              >
                 <Image
                   source={{ uri: item }}
                   style={{
@@ -303,7 +402,9 @@ const GalleryDetails = () => {
               </View>
             )}
             onMomentumScrollEnd={(event) => {
-              const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+              const index = Math.round(
+                event.nativeEvent.contentOffset.x / screenWidth
+              );
               setSelectedImageIndex(index);
             }}
             showsHorizontalScrollIndicator={false}
@@ -314,28 +415,35 @@ const GalleryDetails = () => {
               index,
             })}
           />
-          <View style={{ flexDirection: 'row', marginBottom: 30 }}>
+          <View style={{ flexDirection: "row", marginBottom: 30 }}>
             <TouchableOpacity
               onPress={() => handleExportImage(images[selectedImageIndex])}
               style={{
                 padding: 10,
-                backgroundColor: 'gray',
+                backgroundColor: "gray",
                 borderRadius: 10,
                 marginRight: 20,
-                flexDirection: 'row',
-                alignItems: 'center',
+                flexDirection: "row",
+                alignItems: "center",
               }}
             >
               <AntDesign name="download" size={18} color="white" />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => deleteImages(galleryId, [images[selectedImageIndex]], images, setGalleryData)}
+              onPress={() =>
+                deleteImages(
+                  galleryId,
+                  [images[selectedImageIndex]],
+                  images,
+                  setGalleryData
+                )
+              }
               style={{
                 padding: 10,
-                backgroundColor: 'red',
+                backgroundColor: "red",
                 borderRadius: 10,
-                flexDirection: 'row',
-                alignItems: 'center',
+                flexDirection: "row",
+                alignItems: "center",
               }}
             >
               <Feather name="trash" size={18} color="white" />
