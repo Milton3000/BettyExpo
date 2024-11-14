@@ -4,9 +4,13 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const TabIcon = ({ iconName, color, name, focused }) => {
   return (
-    <View className="items-center justify-center gap-2">
-      <Ionicons name={iconName} size={24} color={color} />
-      <Text className={`${focused ? "font-psemibold" : "font-pregular"} text-xs`} style={{ color: color }}>
+    <View style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column', paddingTop: 10 }}>
+      <Ionicons name={iconName} size={24} color={color} style={{ marginBottom: 4 }} />
+      <Text 
+        style={{ color: color, fontSize: 12, textAlign: 'center', fontWeight: focused ? '600' : '400', width: 60 }} // Set width for consistent text display
+        numberOfLines={1} // Ensure text is on one line
+        ellipsizeMode="tail" // Truncate with ellipsis if text is too long
+      >
         {name}
       </Text>
     </View>
@@ -24,7 +28,9 @@ const TabsLayout = () => {
           backgroundColor: "#161622",
           borderTopWidth: 1,
           borderTopColor: "#232533",
-          height: 84,
+          height: 90,
+          paddingTop: 10,
+          paddingBottom: 10,
         },
       }}
     >
@@ -63,6 +69,7 @@ const TabsLayout = () => {
 };
 
 export default TabsLayout;
+
 
 
 

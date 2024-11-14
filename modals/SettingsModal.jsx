@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
-import { uploadFile } from '../lib/appwrite'; // Use your existing uploadFile function
-import { databases, config } from '../lib/appwrite'; // Adjust the paths to your setup
+import React, { useState } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import { uploadFile } from "../lib/appwrite"; // Use your existing uploadFile function
+import { databases, config } from "../lib/appwrite"; // Adjust the paths to your setup
 
-const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, galleryId, onThumbnailUpdated }) => {
+const SettingsModal = ({
+  visible,
+  onClose,
+  onAccessPress,
+  onDeletePress,
+  galleryId,
+  onThumbnailUpdated,
+}) => {
   const [selectedThumbnail, setSelectedThumbnail] = useState(null);
   const [uploading, setUploading] = useState(false);
 
@@ -18,18 +32,17 @@ const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, gallery
         allowsEditing: true,
         quality: 1,
       });
-  
+
       if (!result.canceled) {
         const { uri } = result.assets[0]; // Adjust to ensure you are fetching the URI properly
         setSelectedThumbnail(uri); // Set the selected image URI
       } else {
-        console.log('Thumbnail selection was canceled');
+        console.log("Thumbnail selection was canceled");
       }
     } catch (error) {
-      console.error('Error selecting thumbnail:', error);
+      console.error("Error selecting thumbnail:", error);
     }
   };
-  
 
   // Compress and upload the new thumbnail
   const handleUploadThumbnail = async () => {
@@ -51,24 +64,29 @@ const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, gallery
       const file = {
         uri: compressedImage.uri,
         name: `thumbnail_${galleryId}.jpg`,
-        type: 'image/jpeg', // Set the correct MIME type for images
+        type: "image/jpeg", // Set the correct MIME type for images
       };
 
-      const uploadedThumbnailUrl = await uploadFile(file, 'image/jpeg'); // Upload using your existing uploadFile function
+      const uploadedThumbnailUrl = await uploadFile(file, "image/jpeg"); // Upload using your existing uploadFile function
 
       // Update the gallery document with the new thumbnail URL
-      await databases.updateDocument(config.databaseId, config.galleriesCollectionId, galleryId, {
-        thumbnail: uploadedThumbnailUrl, // Update the gallery document with the thumbnail URL
-      });
+      await databases.updateDocument(
+        config.databaseId,
+        config.galleriesCollectionId,
+        galleryId,
+        {
+          thumbnail: uploadedThumbnailUrl, // Update the gallery document with the thumbnail URL
+        }
+      );
 
-      Alert.alert('Success', 'Thumbnail updated successfully!');
+      Alert.alert("Success", "Thumbnail updated successfully!");
       setSelectedThumbnail(null); // Clear the selected thumbnail
       setUploading(false);
       onThumbnailUpdated(); // Notify parent component to refresh the gallery
       onClose(); // Close the modal
     } catch (error) {
-      console.error('Error uploading thumbnail:', error);
-      Alert.alert('Error', error.message || 'Failed to upload thumbnail.');
+      console.error("Error uploading thumbnail:", error);
+      Alert.alert("Error", error.message || "Failed to upload thumbnail.");
       setUploading(false); // Stop the upload process in case of error
     }
   };
@@ -83,25 +101,25 @@ const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, gallery
       <View
         style={{
           flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'rgba(0,0,0,0.7)',
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "rgba(0,0,0,0.7)",
         }}
       >
         <View
           style={{
             width: 300,
             padding: 20,
-            backgroundColor: 'white',
+            backgroundColor: "white",
             borderRadius: 10,
           }}
         >
           <Text
             style={{
               fontSize: 18,
-              fontWeight: 'bold',
+              fontWeight: "bold",
               marginBottom: 20,
-              textAlign: 'center',
+              textAlign: "center",
             }}
           >
             Settings
@@ -111,20 +129,20 @@ const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, gallery
           <TouchableOpacity
             onPress={handleEditThumbnail}
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
               padding: 15,
-              backgroundColor: '#f0f0f0',
+              backgroundColor: "#f0f0f0",
               borderRadius: 8,
               marginBottom: 15,
               borderWidth: 1,
-              borderColor: '#ccc',
+              borderColor: "#ccc",
             }}
           >
             <Feather name="image" size={20} color="black" />
-            <Text style={{ fontWeight: 'bold', color: 'black', marginLeft: 8 }}>
-              {selectedThumbnail ? 'Change Thumbnail' : 'Edit Thumbnail'}
+            <Text style={{ fontWeight: "bold", color: "black", marginLeft: 8 }}>
+              {selectedThumbnail ? "Change Thumbnail" : "Edit Thumbnail"}
             </Text>
           </TouchableOpacity>
 
@@ -134,19 +152,21 @@ const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, gallery
               onPress={handleUploadThumbnail}
               style={{
                 padding: 15,
-                backgroundColor: '#4CAF50',
+                backgroundColor: "#4CAF50",
                 borderRadius: 8,
                 marginBottom: 15,
                 borderWidth: 1,
-                borderColor: '#4CAF50',
-                alignItems: 'center',
+                borderColor: "#4CAF50",
+                alignItems: "center",
               }}
               disabled={uploading} // Disable the button during upload
             >
               {uploading ? (
-                <ActivityIndicator size="small" color="white" />
+                <ActivityIndicator size={20} color="white" />
               ) : (
-                <Text style={{ fontWeight: 'bold', color: 'white' }}>Upload Thumbnail</Text>
+                <Text style={{ fontWeight: "bold", color: "white" }}>
+                  Upload Thumbnail
+                </Text>
               )}
             </TouchableOpacity>
           )}
@@ -156,15 +176,15 @@ const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, gallery
             onPress={onAccessPress}
             style={{
               padding: 15,
-              backgroundColor: '#f0f0f0',
+              backgroundColor: "#f0f0f0",
               borderRadius: 8,
               marginBottom: 15,
               borderWidth: 1,
-              borderColor: '#ccc',
-              alignItems: 'center',
+              borderColor: "#ccc",
+              alignItems: "center",
             }}
           >
-            <Text style={{ fontWeight: 'bold', color: 'black' }}>Access</Text>
+            <Text style={{ fontWeight: "bold", color: "black" }}>Access</Text>
           </TouchableOpacity>
 
           {/* Delete Gallery Option */}
@@ -172,15 +192,17 @@ const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, gallery
             onPress={onDeletePress}
             style={{
               padding: 15,
-              backgroundColor: '#f8d7da',
+              backgroundColor: "#f8d7da",
               borderRadius: 8,
               marginBottom: 15,
               borderWidth: 1,
-              borderColor: '#f5c6cb',
-              alignItems: 'center',
+              borderColor: "#f5c6cb",
+              alignItems: "center",
             }}
           >
-            <Text style={{ fontWeight: 'bold', color: 'red' }}>Delete Gallery</Text>
+            <Text style={{ fontWeight: "bold", color: "red" }}>
+              Delete Gallery
+            </Text>
           </TouchableOpacity>
 
           {/* Cancel Button */}
@@ -189,10 +211,10 @@ const SettingsModal = ({ visible, onClose, onAccessPress, onDeletePress, gallery
             style={{
               padding: 10,
               borderRadius: 5,
-              alignItems: 'center',
+              alignItems: "center",
             }}
           >
-            <Text style={{ fontWeight: 'bold', color: 'black' }}>Cancel</Text>
+            <Text style={{ fontWeight: "bold", color: "black" }}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </View>

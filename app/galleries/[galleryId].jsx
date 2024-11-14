@@ -421,7 +421,7 @@ const GalleryDetails = () => {
                     width: screenWidth,
                     height: screenWidth * 1.33,
                   }}
-                  resizeMode="cover"
+                  resizeMode="contain" // Changed to contain, small white line underneath.
                 />
               </View>
             )}
