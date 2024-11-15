@@ -67,9 +67,10 @@ const Galleries = () => {
 <Text
   style={{
     color: 'white',
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginTop: 5,
+    marginBottom: 15,
     textAlign: 'center',
   }}
   className="font-didotbold"
