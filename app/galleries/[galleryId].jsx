@@ -191,7 +191,7 @@ const GalleryDetails = () => {
               marginRight: 10,
             }}
           >
-            <Text style={{ color: "white", fontWeight: "bold", fontSize: 12 }}>
+            <Text className="font-helveticabold" style={{ color: "white", fontWeight: "bold", fontSize: 12 }}>
               {isMultiSelectMode ? "Cancel" : "Select"}
             </Text>
           </TouchableOpacity>
@@ -209,7 +209,7 @@ const GalleryDetails = () => {
         </View>
       </View>
 
-      <Text
+      <Text className="font-helveticabold"
         style={{
           color: "white",
           fontSize: 18,
@@ -221,7 +221,7 @@ const GalleryDetails = () => {
         {title}
       </Text>
       {eventDate && (
-        <Text style={{ color: "gray", textAlign: "center", marginTop: 8 }}>
+        <Text className="font-helvetica" style={{ color: "gray", textAlign: "center", marginTop: 8 }}>
           Created on:{" "}
           {new Date(eventDate).toLocaleDateString("en-US", {
             year: "numeric",

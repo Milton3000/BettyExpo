@@ -125,18 +125,19 @@ const CreateGallery = () => {
     <SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
       <StatusBar style="light" backgroundColor="#161622" />
       <ScrollView className="px-4 my-6">
-        <Text className="text-2xl text-white font-psemibold">Create a Gallery</Text>
+        <Text className="text-2xl text-white font-helveticabold">Create a Gallery</Text>
         <FormField
-          title="Gallery Title"
-          value={form.galleryTitle}
-          placeholder="Enter gallery title ..."
-          handleChangeText={(e) => setForm({ ...form, galleryTitle: e })}
-          otherStyles="mt-10"
-        />
+  title="Gallery Title"
+  value={form.galleryTitle}
+  placeholder="Enter gallery title ..."
+  handleChangeText={(e) => setForm({ ...form, galleryTitle: e })}
+  otherStyles="mt-10"
+/>
+
 
         {/* Thumbnail Section */}
         <View className="mt-7 space-y-2">
-          <Text className="text-base text-gray-100 font-pmedium">Thumbnail Image</Text>
+          <Text className="text-base text-gray-100 font-helveticabold">Thumbnail Image</Text>
           <TouchableOpacity onPress={openThumbnailPicker}>
             {form.thumbnail ? (
               <Image 
@@ -147,7 +148,7 @@ const CreateGallery = () => {
             ) : (
               <View className="w-full h-16 px-4 bg-black-100 rounded-2xl justify-center items-center border-2 border-black-200 flex-row space-x-2">
                 <Image source={icons.upload} resizeMethod="contain" className="w-5 h-5" />
-                <Text className="text-sm text-gray-100 font-pmedium">Choose a thumbnail</Text>
+                <Text className="text-sm text-gray-100 font-helveticabold">Choose a thumbnail</Text>
               </View>
             )}
           </TouchableOpacity>

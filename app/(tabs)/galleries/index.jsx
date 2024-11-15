@@ -64,11 +64,21 @@ const Galleries = () => {
 
   return (
     <SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
-      <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' }}>
-        Galleries
-      </Text>
+<Text
+  style={{
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  }}
+  className="font-didotbold"
+>
+  Galleries
+</Text>
 
-      <FlatList
+
+      <FlatList 
         data={galleries}
         keyExtractor={(item) => item.$id}
         numColumns={2}
@@ -82,7 +92,8 @@ const Galleries = () => {
               onPress={() => handleGalleryPress(item)}
               style={{ flex: 1, marginBottom: 10, marginHorizontal: 5 }}
             >
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center', color: "white" }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'center', color: "white" }}
+                        className="font-helveticabold">
                 {title}
               </Text>
               <View style={{ padding: 10, shadowColor: 'black', shadowOpacity: 0.3, shadowRadius: 5 }}>
@@ -107,14 +118,14 @@ const Galleries = () => {
             <TouchableOpacity
               onPress={isLogged ? handleCreateGalleryPress : handleSignUpPress}
               style={{
-                backgroundColor: '#6200EE',
+                backgroundColor: '#4b5c64', // FIX LATER
                 paddingVertical: 12,
                 paddingHorizontal: 20,
                 borderRadius: 8,
                 marginTop: 10,
               }}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>
+              <Text className="font-helveticabold" style={{ color: 'white', fontWeight: 'bold' }}>
                 {isLogged ? "Create Gallery" : "Sign Up"}
               </Text>
             </TouchableOpacity>

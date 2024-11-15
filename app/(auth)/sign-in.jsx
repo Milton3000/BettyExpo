@@ -1,14 +1,19 @@
 import { View, Text, Image, Alert, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; // New Import
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { images } from "../../constants";
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
 import { getCurrentUser, signIn, checkActiveSession, deleteSessions } from '../../lib/appwrite';
 import { useGlobalContext } from "../../context/GlobalProvider";
-import { StatusBar } from 'expo-status-bar';  // For status bar
+import { StatusBar } from 'expo-status-bar';
+import * as AuthSession from 'expo-auth-session';
+
+// Auth0 credentials
+const auth0ClientId = "ssviZhtv1BxUdFX0kNTlPhR37PUuM5EM";
+const auth0Domain = "dev-txsc1yccyhk88eeb.eu.auth0.com";
 
 const SignIn = () => {
   const { setUser, setIsLogged } = useGlobalContext();
@@ -22,7 +27,7 @@ const SignIn = () => {
   const submit = async () => {
     if (form.email === "" || form.password === "") {
       Alert.alert("Error", "Please fill in all fields");
-      return; // Exit early if validation fails
+      return;
     }
   
     setSubmitting(true);
@@ -47,6 +52,35 @@ const SignIn = () => {
     }
   };
 
+  // Function for handling Auth0 sign-in
+  const handleAuth0SignIn = async () => {
+    try {
+      const redirectUri = AuthSession.makeRedirectUri({
+        scheme: "betty",
+        useProxy: true
+      });
+      console.log("Redirect URI:", redirectUri);
+
+      const authUrl = `https://${auth0Domain}/authorize?client_id=${auth0ClientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=openid%20profile%20email`;
+      console.log("Auth URL:", authUrl);
+
+      const result = await AuthSession.startAsync({ authUrl });
+      console.log("AuthSession Result:", result);
+
+      if (result.type === 'success' && result.params && result.params.access_token) {
+        const user = await getCurrentUser();
+        setUser(user);
+        setIsLogged(true);
+        router.replace("/galleries");
+      } else {
+        throw new Error(`Authentication failed with result type: ${result.type}`);
+      }
+    } catch (error) {
+      console.error("Auth0 Sign-In Error:", error);
+      Alert.alert("Error", `Failed to sign in with Auth0. Details: ${error.message}`);
+    }
+  };
+
   const handleForgotPassword = () => {
     router.push("/forgot-password");
   };
@@ -56,8 +90,8 @@ const SignIn = () => {
       <StatusBar style="light" backgroundColor="#161622" />
       <KeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
-        enableOnAndroid={true}  // Enables keyboard scrolling on Android
-        extraHeight={300}  // Adjusts the height to move content when the keyboard opens
+        enableOnAndroid={true}
+        extraHeight={300}
       >
         <View style={{ alignItems: 'center', marginBottom: 40 }}>
           <Image
@@ -91,6 +125,21 @@ const SignIn = () => {
             containerStyles={{ marginTop: 30 }}
             isLoading={isSubmitting}
           />
+
+          {/* Auth0 Sign-In Button */}
+          <TouchableOpacity
+            onPress={handleAuth0SignIn}
+            style={{
+              marginTop: 20,
+              backgroundColor: '#DB4437',
+              paddingVertical: 10,
+              borderRadius: 5,
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>Sign in with Auth0</Text>
+          </TouchableOpacity>
 
           {/* Sign-Up and Forgot Password Links */}
           <View style={{ justifyContent: 'center', flexDirection: 'row', marginTop: 20 }}>

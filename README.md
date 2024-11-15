@@ -175,3 +175,7 @@ export const getAllPosts = async () => {
 
 
        eas update för att få qr kod
+
+eas build --profile development --platform ios (För att färdigställa en build som sedan skapar en QR kod till en APP nedladdning på telefonen, viktigt att ha Apple Developer Konto för detta för att registrera telefonens UDID)
+Go to the Apple Developer Portal.
+Make sure that your Apple device’s UDID is registered under Devices in Certificates, Identifiers & Profiles.

@@ -8,6 +8,7 @@ const TabIcon = ({ iconName, color, name, focused }) => {
       <Ionicons name={iconName} size={24} color={color} style={{ marginBottom: 4 }} />
       <Text 
         style={{ color: color, fontSize: 12, textAlign: 'center', fontWeight: focused ? '600' : '400', width: 60 }} // Set width for consistent text display
+        className="font-helveticabold" // Apply Helvetica-Bold font
         numberOfLines={1} // Ensure text is on one line
         ellipsizeMode="tail" // Truncate with ellipsis if text is too long
       >

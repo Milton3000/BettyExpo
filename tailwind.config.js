@@ -20,6 +20,10 @@ module.exports = {
         },
       },
       fontFamily: {
+        didot: ['Didot', 'serif'], // Standard Didot
+        didotbold: ['Didot-Bold', 'serif'], // Bold version
+        helvetica: ['Helvetica', 'sans-serif'], // Standard Helvetica
+        helveticabold: ['Helvetica-Bold', 'sans-serif'], // Bold Helvetica
         pthin: ["Poppins-Thin", "sans-serif"],
         pextralight: ["Poppins-ExtraLight", "sans-serif"],
         plight: ["Poppins-Light", "sans-serif"],
