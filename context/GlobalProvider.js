@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getCurrentUser, signOut } from "../lib/appwrite";
 
 const GlobalContext = createContext();
@@ -7,20 +7,23 @@ export const useGlobalContext = () => useContext(GlobalContext);
 
 const GlobalProvider = ({ children }) => {
   const [isLogged, setIsLogged] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Save session to AsyncStorage
   const saveSession = async (session) => {
     try {
-      await AsyncStorage.setItem('userSession', JSON.stringify(session));
+      await AsyncStorage.setItem("userSession", JSON.stringify(session));
     } catch (error) {
       console.error("Error saving session", error);
     }
   };
 
+  // Load session from AsyncStorage
   const loadSession = async () => {
     try {
-      const storedSession = await AsyncStorage.getItem('userSession');
+      const storedSession = await AsyncStorage.getItem("userSession");
       return storedSession ? JSON.parse(storedSession) : null;
     } catch (error) {
       console.error("Error loading session", error);
@@ -28,14 +31,16 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
+  // Clear session from AsyncStorage
   const clearSession = async () => {
     try {
-      await AsyncStorage.removeItem('userSession');
+      await AsyncStorage.removeItem("userSession");
     } catch (error) {
       console.error("Error clearing session", error);
     }
   };
 
+  // Check session and determine user or guest status
   useEffect(() => {
     const checkSession = async () => {
       const storedSession = await loadSession();
@@ -46,21 +51,22 @@ const GlobalProvider = ({ children }) => {
           const res = await getCurrentUser();
           if (res) {
             setIsLogged(true);
+            setIsGuest(false); // Not a guest
             setUser(res);
-            setLoading(false);
           } else {
             throw new Error("Session expired or invalid");
           }
         } catch (error) {
           console.log("Session error, logging out:", error);
           setIsLogged(false);
+          setIsGuest(true); // Guest access
           setUser(null);
-          await signOut();  // Clear invalid session
-          setLoading(false);
+          await signOut(); // Clear invalid session
         }
       } else {
-        setLoading(false);
+        setIsGuest(true); // No session, default to guest
       }
+      setLoading(false);
     };
 
     checkSession();
@@ -71,6 +77,8 @@ const GlobalProvider = ({ children }) => {
       value={{
         isLogged,
         setIsLogged,
+        isGuest,
+        setIsGuest,
         user,
         setUser,
         loading,
@@ -83,9 +91,6 @@ const GlobalProvider = ({ children }) => {
 };
 
 export default GlobalProvider;
-
-
-
 
 
 // ORIGINAL GLOBALPROVIDER
