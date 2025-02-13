@@ -22,7 +22,7 @@ const Galleries = () => {
   // Optimize console.logs by moving them into a useFocusEffect
   useFocusEffect(
     useCallback(() => {
-      console.log("User:", user);
+      // console.log("User:", user);
       console.log("Is Logged:", isLogged);
       console.log("Is Guest:", isGuest);
     }, [user, isLogged, isGuest])
@@ -45,7 +45,6 @@ const Galleries = () => {
         (a, b) => new Date(b.$createdAt) - new Date(a.$createdAt)
       );
 
-      console.log("Fetched galleries:", sortedGalleries);
       setGalleries(sortedGalleries);
     } catch (error) {
       if (retryCount > 0) {
