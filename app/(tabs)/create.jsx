@@ -12,7 +12,7 @@ import * as ImageManipulator from 'expo-image-manipulator'; // Add ImageManipula
 import { StatusBar } from 'expo-status-bar';
 
 const CreateGallery = () => {
-  const { user } = useGlobalContext();
+  const { user, isGuest } = useGlobalContext();
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     galleryTitle: "",
@@ -183,13 +183,28 @@ const CreateGallery = () => {
         </View>
         */}
 
-        <CustomButton 
-          title="Submit Gallery"
-          handlePress={submit}
-          containerStyles="mt-7"
-          isLoading={uploading}
-        />
-      </ScrollView>
+{isGuest && (
+  <Text
+    style={{
+      color: 'white',
+      fontSize: 16,
+      fontWeight: '600',
+      textAlign: 'center',
+      marginTop: 30,
+      marginBottom: 10,
+    }}
+  >
+    Create an account to get started
+  </Text>
+)}
+
+<CustomButton 
+  title={isGuest ? "Sign Up" : "Submit Gallery"}
+  handlePress={isGuest ? () => router.push('/sign-up') : submit}
+  containerStyles="mt-2"
+  isLoading={uploading}
+/>
+    </ScrollView>
     </SafeAreaView>
   );
 };

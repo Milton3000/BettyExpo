@@ -152,18 +152,18 @@ const Galleries = () => {
         }}
         ListEmptyComponent={() => (
           <View style={{ alignItems: "center", marginTop: 50 }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "bold",
-                color: "white",
-                marginBottom: 20,
-              }}
-            >
-              {isLogged
-                ? "Create your first gallery to get started!"
-                : "Create an account to get started!"}
-            </Text>
+            {!isLogged && (
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  color: "white",
+                  marginBottom: 20,
+                }}
+              >
+                Create an account to get started!
+              </Text>
+            )}
             <TouchableOpacity
               onPress={isLogged ? handleCreateGalleryPress : handleSignUpPress}
               style={{

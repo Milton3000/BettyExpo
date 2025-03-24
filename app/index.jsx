@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { ImageBackground, Text, View, StyleSheet } from 'react-native';
 import { Redirect, router } from "expo-router";
@@ -6,40 +8,61 @@ import CustomButton from '../components/CustomButton';
 import { useGlobalContext } from '../context/GlobalProvider';
 
 export default function App() {
-    const { isLoading, isLoggedIn } = useGlobalContext();
+  const { isLoading, isLoggedIn } = useGlobalContext();
+  const [hasLaunchedBefore, setHasLaunchedBefore] = useState(null); // null = not yet checked
 
-    if (!isLoading && isLoggedIn) return <Redirect href="/create" />;
+  useEffect(() => {
+    const checkFirstLaunch = async () => {
+      try {
+        const value = await AsyncStorage.getItem('hasLaunched');
+        if (value === null) {
+          // First time launch
+          await AsyncStorage.setItem('hasLaunched', 'true');
+          setHasLaunchedBefore(false);
+        } else {
+          setHasLaunchedBefore(true);
+        }
+      } catch (e) {
+        console.warn('Error reading launch flag:', e);
+        setHasLaunchedBefore(true); // Fallback
+      }
+    };
 
-    return (
-        <View style={styles.container}>
-            <StatusBar style="light" backgroundColor="transparent" translucent />
+    checkFirstLaunch();
+  }, []);
 
-            {/* Fullscreen background image */}
-            <ImageBackground
-                source={images.background}
-                style={styles.backgroundImage}
-                imageStyle={{ resizeMode: 'cover' }}
-            >
-                {/* Light overlay to make the background image lighter */}
-                <View style={styles.lightOverlay} />
+  if (!isLoading && isLoggedIn) return <Redirect href="/create" />;
 
-                {/* Title and subtitle with a localized full-width overlay */}
-                <View style={styles.textOverlay}>
-                    <Text style={styles.title}>APP NAME</Text>
-                    <Text style={styles.subtitle}>Discover Endless Sharing</Text>
-                </View>
+  if (hasLaunchedBefore === null) return null; // or a loading screen
 
-                {/* Button at the bottom */}
-                <View style={styles.buttonContainer}>
-                    <CustomButton
-                        title="Get Started"
-                        handlePress={() => router.push("/sign-in")}
-                        containerStyles="w-2/3"
-                    />
-                </View>
-            </ImageBackground>
+  const buttonTitle = hasLaunchedBefore ? "Sign In" : "Get Started";
+  const buttonTarget = hasLaunchedBefore ? "/sign-in" : "/sign-up";
+
+  return (
+    <View style={styles.container}>
+      <StatusBar style="light" backgroundColor="transparent" translucent />
+
+      <ImageBackground
+        source={images.background}
+        style={styles.backgroundImage}
+        imageStyle={{ resizeMode: 'cover' }}
+      >
+        <View style={styles.lightOverlay} />
+        <View style={styles.textOverlay}>
+          <Text style={styles.title}>APP NAME</Text>
+          <Text style={styles.subtitle}>Discover Endless Sharing</Text>
         </View>
-    );
+
+        <View style={styles.buttonContainer}>
+          <CustomButton
+            title={buttonTitle}
+            handlePress={() => router.push(buttonTarget)}
+            containerStyles="w-2/3"
+          />
+        </View>
+      </ImageBackground>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
