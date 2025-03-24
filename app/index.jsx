@@ -32,7 +32,7 @@ export default function App() {
                 {/* Button at the bottom */}
                 <View style={styles.buttonContainer}>
                     <CustomButton
-                        title="Continue with Email"
+                        title="Get Started"
                         handlePress={() => router.push("/sign-in")}
                         containerStyles="w-2/3"
                     />
