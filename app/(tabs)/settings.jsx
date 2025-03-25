@@ -14,7 +14,7 @@ import HelpModal from '../../modals/HelpModal';
 import DeleteAccountModal from '../../modals/DeleteAccountModal';  // Import the Delete Account modal
 
 const Settings = () => {
-  const { user, setUser, setIsLogged } = useGlobalContext();
+  const { user, setUser, setIsLogged, isGuest } = useGlobalContext();
   const [modalVisible, setModalVisible] = useState(null);  // Generic modal state
   const router = useRouter();
 
@@ -55,45 +55,66 @@ const Settings = () => {
   };
 
   return (
-<SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
-<StatusBar style="light" backgroundColor="#161622" />
+    <SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
+      <StatusBar style="light" backgroundColor="#161622" />
       <ScrollView className="px-4 my-6">
-        {/* Top-right Logout Button */}
-        <TouchableOpacity onPress={confirmLogout} style={{ position: 'absolute', right: 10, zIndex: 99 }}>
-          <Image source={icons.logout} style={{ width: 24, height: 24 }} />
-        </TouchableOpacity>
+        {isGuest ? (
+          <View style={{ alignItems: 'center', marginTop: 100 }}>
+            <Text className="text-white text-lg font-helveticabold text-center mb-4">
+              Settings are not available in Guest Mode.
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.replace("/sign-up")}
+              style={{
+                backgroundColor: "#4b5c64",
+                paddingVertical: 12,
+                paddingHorizontal: 20,
+                borderRadius: 8,
+              }}
+            >
+              <Text style={{ color: "white", fontWeight: "bold" }}>Create an Account</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            {/* Top-right Logout Button */}
+            <TouchableOpacity onPress={confirmLogout} style={{ position: 'absolute', right: 10, zIndex: 99 }}>
+              <Image source={icons.logout} style={{ width: 24, height: 24 }} />
+            </TouchableOpacity>
 
-        {/* Settings Header */}
-        <Text className="text-2xl text-white font-helveticabold mb-10">Settings</Text>
+            {/* Settings Header */}
+            <Text className="text-2xl text-white font-helveticabold mb-10">Settings</Text>
 
-        {/* Account Item */}
-        <TouchableOpacity onPress={() => openModal('Account')} style={{ marginBottom: 20 }}>
-          <Text className="text-base text-white font-helveticabold">Account</Text>
-          <Text className="text-sm text-gray-100 font-helveticabold">Manage your account settings</Text>
-        </TouchableOpacity>
+            {/* Account Item */}
+            <TouchableOpacity onPress={() => openModal('Account')} style={{ marginBottom: 20 }}>
+              <Text className="text-base text-white font-helveticabold">Account</Text>
+              <Text className="text-sm text-gray-100 font-helveticabold">Manage your account settings</Text>
+            </TouchableOpacity>
 
-        {/* Notifications Item */}
-        <TouchableOpacity onPress={() => openModal('Notifications')} style={{ marginBottom: 20 }}>
-          <Text className="text-base text-white font-helveticabold">Notifications</Text>
-          <Text className="text-sm text-gray-100 font-helveticabold">Adjust your notification preferences</Text>
-        </TouchableOpacity>
+            {/* Notifications Item */}
+            <TouchableOpacity onPress={() => openModal('Notifications')} style={{ marginBottom: 20 }}>
+              <Text className="text-base text-white font-helveticabold">Notifications</Text>
+              <Text className="text-sm text-gray-100 font-helveticabold">Adjust your notification preferences</Text>
+            </TouchableOpacity>
 
-        {/* Help Item */}
-        <TouchableOpacity onPress={() => openModal('Help')} style={{ marginBottom: 20 }}>
-          <Text className="text-base text-white font-helveticabold">Help</Text>
-          <Text className="text-sm text-gray-100 font-helveticabold">Get support or find FAQs</Text>
-        </TouchableOpacity>
+            {/* Help Item */}
+            <TouchableOpacity onPress={() => openModal('Help')} style={{ marginBottom: 20 }}>
+              <Text className="text-base text-white font-helveticabold">Help</Text>
+              <Text className="text-sm text-gray-100 font-helveticabold">Get support or find FAQs</Text>
+            </TouchableOpacity>
 
-        {/* Delete Account */}
-        <TouchableOpacity onPress={() => openModal('DeleteAccount')} style={{ marginTop: 30 }}>
-          <Text className="text-base text-red-500 font-helvetica">Delete Account</Text>
-        </TouchableOpacity>
+            {/* Delete Account */}
+            <TouchableOpacity onPress={() => openModal('DeleteAccount')} style={{ marginTop: 30 }}>
+              <Text className="text-base text-red-500 font-helvetica">Delete Account</Text>
+            </TouchableOpacity>
 
-        {/* Modals for each setting */}
-        <AccountModal visible={modalVisible === 'Account'} onClose={() => setModalVisible(null)} />
-        <NotificationsModal visible={modalVisible === 'Notifications'} onClose={() => setModalVisible(null)} />
-        <HelpModal visible={modalVisible === 'Help'} onClose={() => setModalVisible(null)} />
-        <DeleteAccountModal visible={modalVisible === 'DeleteAccount'} onClose={() => setModalVisible(null)} />
+            {/* Modals for each setting */}
+            <AccountModal visible={modalVisible === 'Account'} onClose={() => setModalVisible(null)} />
+            <NotificationsModal visible={modalVisible === 'Notifications'} onClose={() => setModalVisible(null)} />
+            <HelpModal visible={modalVisible === 'Help'} onClose={() => setModalVisible(null)} />
+            <DeleteAccountModal visible={modalVisible === 'DeleteAccount'} onClose={() => setModalVisible(null)} />
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
