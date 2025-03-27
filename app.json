@@ -2,6 +2,7 @@
   "expo": {
     "name": "bettyexpo",
     "slug": "bettyexpo",
+    "owner": "mk3000",
     "scheme": "betty",
     "platforms": [
       "ios",

@@ -12,30 +12,31 @@ const FormField = ({ title, value, placeholder, handleChangeText, otherStyles, .
       <Text className="text-base text-gray-100 font-helveticabold">{title}</Text>
 
       <View className="border-2 border-black-200 w-full px-3 py-3 bg-black-100 rounded-2xl focus:border-secondary items-center flex-row">
-      <TextInput
-  className="flex-1 text-white font-helveticabold text-base"
-  value={value}
-  placeholder={placeholder}
-  placeholderTextColor="#7b7b8b"
-  onChangeText={handleChangeText}
-  secureTextEntry={title === 'Password' && !showPassword}
-  style={{
-    lineHeight: 17,
-  }}
-/>
+        <TextInput
+          className="flex-1 text-white font-helveticabold text-base"
+          value={value}
+          placeholder={placeholder}
+          placeholderTextColor="#7b7b8b"
+          onChangeText={handleChangeText}
+          secureTextEntry={title === 'Password' && !showPassword}
+          style={{
+            lineHeight: 17,
+          }}
+        />
 
 
 
         {/* Show/Hide Password Toggle */}
         {title === "Password" && (
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 5 }}>
             <Image
-              source={!showPassword ? icons.eye : icons.eyehide}
-              className="w-6 h-6"
+              source={!showPassword ? icons.eye : icons.eyeHide}
+              style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
           </TouchableOpacity>
         )}
+
       </View>
     </View>
   );
