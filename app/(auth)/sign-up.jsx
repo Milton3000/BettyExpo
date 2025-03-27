@@ -6,7 +6,7 @@ import { images } from "../../constants";
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link, router, useRouter } from 'expo-router';
-import { createUser, account } from '../../lib/appwrite';
+import { createUser, account, getCurrentUser } from '../../lib/appwrite';
 import { useGlobalContext } from "../../context/GlobalProvider";
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
@@ -28,7 +28,7 @@ const redirectUri = isExpoGo
   : makeRedirectUri({ useProxy: false });
 
 const SignUp = () => {
-  const { setUser, setIsLogged } = useGlobalContext();
+  const { setUser, setIsLogged, setIsGuest} = useGlobalContext();
   const [isSubmitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const expoRouter = useRouter();
@@ -39,18 +39,30 @@ const SignUp = () => {
       return;
     }
     setSubmitting(true);
-
+  
     try {
-      const result = await createUser(form.email, form.password, form.username);
-      setUser(result);
-      setIsLogged(true);
-      router.replace("/galleries");
+      // Create the user and sign them in
+      await createUser(form.email, form.password, form.username);
+      
+      // Refresh session and check if user is logged in
+      const session = await account.getSession('current');
+      if (session) {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);  // Update global state
+        setIsLogged(true);     // Mark as logged in
+        setIsGuest(false);     // Mark as not a guest
+        router.replace("/galleries");  // Redirect to galleries
+      } else {
+        setIsLogged(false);   // If session is not found, set as guest
+        setIsGuest(true);     // Mark as guest
+        Alert.alert("Error", "Something went wrong while logging in.");
+      }
     } catch (error) {
       Alert.alert("Error", error.message);
     } finally {
       setSubmitting(false);
     }
-  };
+  };  
 
   // Google OAuth config
   const discovery = {
