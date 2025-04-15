@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  FlatList,
   Image,
   Text,
   TouchableOpacity,
   Dimensions,
   Modal,
   Alert,
+  FlatList,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather, MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import SettingsModal from "../../modals/SettingsModal";
@@ -17,19 +16,15 @@ import DeleteModal from "../../modals/DeleteModal";
 import QRModal from "../../modals/QRModal";
 import AccessModal from "../../modals/AccessModal";
 import { useUploadMedia } from "../../hooks/useUploadMedia";
-import { deleteImages } from "../../components/DeleteImage";
-import {
-  handleExportImage,
-  handleExportMultipleImages,
-} from "../../utils/mediaUtils";
+import { deleteImages } from "../../lib/deleteImages";
 import { databases, config, deleteGallery } from "../../lib/appwrite";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const GalleryDetails = () => {
   const { galleryId } = useLocalSearchParams();
   const router = useRouter();
   const [galleryData, setGalleryData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -39,6 +34,8 @@ const GalleryDetails = () => {
   const [accessModalVisible, setAccessModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [deletedGalleries, setDeletedGalleries] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
 
   const { uploadMedia, newMedia, openPicker, uploading } = useUploadMedia();
   const screenWidth = Dimensions.get("window").width;
@@ -46,21 +43,18 @@ const GalleryDetails = () => {
   // Fetch gallery data
   const fetchGallery = async () => {
     try {
-      // console.log("Fetching gallery with ID:", galleryId);
-  
       if (!galleryId || deletedGalleries.includes(galleryId)) {
         console.log("Gallery ID is invalid or deleted.");
         return;
       }
-  
+
       const gallery = await databases.getDocument(
         config.databaseId,
         config.galleriesCollectionId,
         galleryId
       );
-  
+
       if (gallery) {
-        // console.log("Fetched gallery data:", gallery);
         setGalleryData(gallery);
       } else {
         console.log("No gallery data found for ID:", galleryId);
@@ -69,16 +63,15 @@ const GalleryDetails = () => {
       console.error("Error fetching gallery:", error);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
-  
+
   // Image selection/deselection logic
-  const toggleSelectImage = (image) => {
-    if (selectedImages.includes(image)) {
-      setSelectedImages(selectedImages.filter((img) => img !== image));
+  const toggleSelectImage = (imageUri) => {
+    if (selectedImages.includes(imageUri)) {
+      setSelectedImages(selectedImages.filter((img) => img !== imageUri));
     } else {
-      setSelectedImages([...selectedImages, image]);
+      setSelectedImages([...selectedImages, imageUri]);
     }
   };
 
@@ -90,17 +83,9 @@ const GalleryDetails = () => {
 
   const handleDeleteGallery = async () => {
     try {
-      // Ensure galleryData, images, and thumbnail are valid, setting defaults if necessary
       const imagesToDelete = galleryData?.images ?? [];
       const thumbnailToDelete = galleryData?.thumbnail; // Undefined if null
-  
-      // Logging for debugging
-      // console.log("Attempting to delete gallery with the following data:");
-      // console.log("Gallery ID:", galleryId);
-      // console.log("Images to delete:", imagesToDelete);
-      // console.log("Thumbnail to delete:", thumbnailToDelete);
-  
-      // Call deleteGallery with conditional arguments
+
       if (thumbnailToDelete) {
         await deleteGallery(
           config.galleriesCollectionId,
@@ -115,19 +100,30 @@ const GalleryDetails = () => {
           imagesToDelete
         );
       }
-  
-      // Clear gallery data and track deletion
-      setGalleryData(null); 
-      setDeletedGalleries((prev) => [...prev, galleryId]); 
-      router.push("/galleries"); 
-  
+
+      setGalleryData(null);
+      setDeletedGalleries((prev) => [...prev, galleryId]);
+      router.push("/galleries");
+
     } catch (error) {
       console.error("Error deleting gallery:", error);
       Alert.alert("Error", `Failed to delete gallery: ${error.message}`);
     }
   };
-  
-  
+
+  const handleDeleteSelectedImages = async () => {
+    if (selectedImages.length === 0) {
+      return Alert.alert("No images selected", "Please select images to delete.");
+    }
+
+    const allImages = galleryData?.images ?? [];
+
+    await deleteImages(galleryId, selectedImages, allImages, setGalleryData);
+
+    setSelectedImages([]);
+    setIsMultiSelectMode(false);
+  };
+
   const handleUploadMedia = async () => {
     await uploadMedia(galleryId, databases, config);
     await fetchGallery();
@@ -143,6 +139,54 @@ const GalleryDetails = () => {
     .filter(Boolean)
     .map((img, index) => ({ uri: img, id: index.toString() }));
 
+  const renderImage = ({ item, index }) => (
+    <TouchableOpacity
+      onPress={() => {
+        if (!isMultiSelectMode) {
+          setSelectedImageIndex(index);
+          setModalVisible(true);
+        } else {
+          toggleSelectImage(item.uri);
+        }
+      }}
+      onLongPress={() => {
+        if (!isMultiSelectMode) {
+          setIsMultiSelectMode(true);
+          toggleSelectImage(item.uri);
+        }
+      }}
+      style={{
+        width: (screenWidth - 20) / 3, // Ensuring 3 images per row
+        height: (screenWidth - 20) / 3,
+        borderWidth: 0.5, // This adds a solid border
+        borderColor: "#0000", // You can change the color to any valid color, here it's black
+      }}
+    >
+      <Image
+        source={{ uri: item.uri }}
+        style={{
+          width: "100%",
+          height: "100%",
+        }}
+        resizeMode="cover"
+      />
+      {selectedImages.includes(item.uri) && (
+        <View
+          style={{
+            position: "absolute",
+            top: 5,
+            right: 5,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            borderRadius: 12,
+            padding: 2,
+          }}
+        >
+          <Feather name="check" size={16} color="white" />
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView className="bg-primary h-full">
       <View
@@ -150,8 +194,8 @@ const GalleryDetails = () => {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          paddingHorizontal: 16,
-          marginTop: 16,
+          paddingHorizontal: 12,
+          marginTop: 12,
         }}
       >
         <TouchableOpacity
@@ -207,8 +251,7 @@ const GalleryDetails = () => {
         {title}
       </Text>
       {eventDate && (
-        <Text className="font-helvetica" style={{ color: "gray", textAlign: "center", marginTop: 8 }}>
-          Created on:{" "}
+        <Text className="font-helvetica" style={{ color: "gray", textAlign: "center", marginTop: 4, marginBottom: 4, }}>
           {new Date(eventDate).toLocaleDateString("en-US", {
             year: "numeric",
             month: "long",
@@ -219,73 +262,24 @@ const GalleryDetails = () => {
 
       {/* Scrollable Image Gallery */}
       <FlatList
-        data={filteredImages} // Use filtered and re-indexed images array
-        keyExtractor={(item) => item.id} // Use unique id from re-indexed images
-        renderItem={({ item, index }) => (
-          <TouchableOpacity
-            onPress={() => {
-              if (!isMultiSelectMode) {
-                setSelectedImageIndex(index);
-                setModalVisible(true);
-              } else {
-                toggleSelectImage(item.uri);
-              }
-            }}
-            onLongPress={() => {
-              if (!isMultiSelectMode) {
-                setIsMultiSelectMode(true);
-                toggleSelectImage(item.uri);
-              }
-            }}
-            style={{
-              margin: 1,
-              borderWidth: selectedImages.includes(item.uri) ? 1 : 0,
-              borderColor: "yellow",
-              borderRadius: 5,
-            }}
-          >
-            <Image
-              source={{ uri: item.uri }}
-              style={{
-                width: screenWidth / 3 - 1,
-                height: screenWidth / 2.5 - 2.5,
-              }}
-              resizeMode="cover"
-            />
-            {selectedImages.includes(item.uri) && (
-              <View
-                style={{
-                  position: "absolute",
-                  top: 5,
-                  right: 5,
-                  backgroundColor: "rgba(0,0,0,0.6)",
-                  borderRadius: 12,
-                  padding: 2,
-                }}
-              >
-                <Feather name="check" size={16} color="white" />
-              </View>
-            )}
-          </TouchableOpacity>
-        )}
-        numColumns={3}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
+        data={filteredImages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderImage}
+        numColumns={3} // 3 images per row
         showsVerticalScrollIndicator={false}
         refreshing={refreshing}
         onRefresh={fetchGallery}
-        style={{ height: screenWidth }} // Display only 3 rows of images
+        contentContainerStyle={{
+          flexWrap: "wrap",
+          justifyContent: "flex-start",
+          paddingHorizontal: 10,
+        }}
       />
 
       {/* Action Buttons */}
       <View style={{ marginTop: 10, alignItems: "center" }}>
         {isMultiSelectMode && selectedImages.length > 0 && (
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-evenly",
-              marginBottom: 10,
-            }}
-          >
+          <View style={{ flexDirection: "row", justifyContent: "space-evenly", marginBottom: 10 }}>
             <TouchableOpacity
               onPress={() =>
                 handleExportMultipleImages(
@@ -305,23 +299,12 @@ const GalleryDetails = () => {
               }}
             >
               <AntDesign name="download" size={18} color="white" />
-              <Text
-                style={{ color: "white", textAlign: "center", marginLeft: 8 }}
-              >
+              <Text style={{ color: "white", textAlign: "center", marginLeft: 8 }}>
                 {selectedImages.length}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={async () => {
-                await deleteImages(
-                  galleryId,
-                  selectedImages,
-                  images,
-                  setGalleryData
-                );
-                setSelectedImages([]);
-                setIsMultiSelectMode(false);
-              }}
+              onPress={handleDeleteSelectedImages}
               style={{
                 padding: 16,
                 backgroundColor: "red",
@@ -333,9 +316,7 @@ const GalleryDetails = () => {
               }}
             >
               <Feather name="trash" size={18} color="white" />
-              <Text
-                style={{ color: "white", textAlign: "center", marginLeft: 8 }}
-              >
+              <Text style={{ color: "white", textAlign: "center", marginLeft: 8 }}>
                 {selectedImages.length}
               </Text>
             </TouchableOpacity>
@@ -364,27 +345,16 @@ const GalleryDetails = () => {
             <Text style={{ color: "white", textAlign: "center" }}>
               {uploading
                 ? "Uploading..."
-                : `Upload ${newMedia.length} Image${
-                    newMedia.length > 1 ? "s" : ""
-                  }`}
+                : `Upload ${newMedia.length} Image${newMedia.length > 1 ? "s" : ""}`}
             </Text>
           </TouchableOpacity>
         )}
       </View>
 
+      {/* Modal for image preview */}
       <Modal visible={modalVisible} transparent={true} animationType="slide">
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.8)",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <TouchableOpacity
-            style={{ position: "absolute", top: 60, right: 12, zIndex: 1 }}
-            onPress={() => setModalVisible(false)}
-          >
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.8)", justifyContent: "center", alignItems: "center" }}>
+          <TouchableOpacity style={{ position: "absolute", top: 60, right: 12, zIndex: 1 }} onPress={() => setModalVisible(false)}>
             <Feather name="x" size={35} color="white" />
           </TouchableOpacity>
 
@@ -394,27 +364,19 @@ const GalleryDetails = () => {
             pagingEnabled
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
-              <View
-                style={{
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: screenWidth,
-                }}
-              >
+              <View style={{ alignItems: "center", justifyContent: "center", width: screenWidth }}>
                 <Image
                   source={{ uri: item }}
                   style={{
                     width: screenWidth,
                     height: screenWidth * 1.33,
                   }}
-                  resizeMode="contain" // Changed to contain, small white line underneath.
+                  resizeMode="contain"
                 />
               </View>
             )}
             onMomentumScrollEnd={(event) => {
-              const index = Math.round(
-                event.nativeEvent.contentOffset.x / screenWidth
-              );
+              const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
               setSelectedImageIndex(index);
             }}
             showsHorizontalScrollIndicator={false}
@@ -441,12 +403,7 @@ const GalleryDetails = () => {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() =>
-                deleteImages(
-                  galleryId,
-                  [images[selectedImageIndex]],
-                  images,
-                  setGalleryData
-                )
+                deleteImages(galleryId, [images[selectedImageIndex]], images, setGalleryData)
               }
               style={{
                 padding: 10,
@@ -462,6 +419,7 @@ const GalleryDetails = () => {
         </View>
       </Modal>
 
+      {/* Settings Modal */}
       {settingsModalVisible && (
         <SettingsModal
           visible={settingsModalVisible}
