@@ -79,7 +79,6 @@ const SettingsModal = ({
         }
       );
 
-      Alert.alert("Success", "Thumbnail updated successfully!");
       setSelectedThumbnail(null); // Clear the selected thumbnail
       setUploading(false);
       onThumbnailUpdated(); // Notify parent component to refresh the gallery

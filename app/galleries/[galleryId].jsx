@@ -46,47 +46,33 @@ const GalleryDetails = () => {
   // Fetch gallery data
   const fetchGallery = async () => {
     try {
-      if (!galleryId || deletedGalleries.includes(galleryId)) return;
-
-      setRefreshing(true);
-      const galleryList = await databases.listDocuments(
-        config.databaseId,
-        config.galleriesCollectionId
-      );
-      const galleryExists = galleryList.documents.some(
-        (doc) => doc.$id === galleryId
-      );
-
-      if (!galleryExists) {
-        setGalleryData(null);
-        setDeletedGalleries((prev) => [...prev, galleryId]);
+      // console.log("Fetching gallery with ID:", galleryId);
+  
+      if (!galleryId || deletedGalleries.includes(galleryId)) {
+        console.log("Gallery ID is invalid or deleted.");
         return;
       }
-
+  
       const gallery = await databases.getDocument(
         config.databaseId,
         config.galleriesCollectionId,
         galleryId
       );
-      setGalleryData(gallery);
-      // console.log("Fetched Images Array:", gallery.images); // Log for debugging
-    } catch (error) {
-      if (
-        error.message.includes(
-          "Document with the requested ID could not be found"
-        )
-      ) {
-        Alert.alert("Error", "The requested gallery does not exist.");
-        setDeletedGalleries((prev) => [...prev, galleryId]);
+  
+      if (gallery) {
+        // console.log("Fetched gallery data:", gallery);
+        setGalleryData(gallery);
       } else {
-        Alert.alert("Error", "Failed to load gallery details.");
+        console.log("No gallery data found for ID:", galleryId);
       }
+    } catch (error) {
+      console.error("Error fetching gallery:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
-
+  
   // Image selection/deselection logic
   const toggleSelectImage = (image) => {
     if (selectedImages.includes(image)) {
@@ -109,10 +95,10 @@ const GalleryDetails = () => {
       const thumbnailToDelete = galleryData?.thumbnail; // Undefined if null
   
       // Logging for debugging
-      console.log("Attempting to delete gallery with the following data:");
-      console.log("Gallery ID:", galleryId);
-      console.log("Images to delete:", imagesToDelete);
-      console.log("Thumbnail to delete:", thumbnailToDelete);
+      // console.log("Attempting to delete gallery with the following data:");
+      // console.log("Gallery ID:", galleryId);
+      // console.log("Images to delete:", imagesToDelete);
+      // console.log("Thumbnail to delete:", thumbnailToDelete);
   
       // Call deleteGallery with conditional arguments
       if (thumbnailToDelete) {

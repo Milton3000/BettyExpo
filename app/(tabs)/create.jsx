@@ -22,76 +22,57 @@ const CreateGallery = () => {
   });
 
   const openThumbnailPicker = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      // Compress the selected thumbnail image
-      const compressedThumbnail = await ImageManipulator.manipulateAsync(
-        result.assets[0].uri,
-        [{ resize: { width: 1000 } }], // Resize to 1000px width
-        { compress: 0.9, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
-      );
-
-      // Update the form with the compressed thumbnail
-      setForm({
-        ...form,
-        thumbnail: {
-          uri: compressedThumbnail.uri, // Replace URI with the compressed image URI
-          name: result.assets[0].fileName || `thumbnail-${Date.now()}.jpg`, // Ensure fileName is present
-          type: 'image/jpeg',
-          size: compressedThumbnail.size || result.assets[0].fileSize, // Use the size or fallback
-        },
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
       });
-    } else {
-      // Alert.alert('No thumbnail selected');
+  
+      if (!result.canceled) {
+        const { uri } = result.assets[0];
+        setForm({
+          ...form,
+          thumbnail: {
+            uri,
+            name: result.assets[0].fileName || `thumbnail-${Date.now()}.jpg`,
+            type: 'image/jpeg',
+            size: result.assets[0].fileSize,
+          },
+        });
+      } else {
+        console.log("Thumbnail selection was canceled");
+      }
+    } catch (error) {
+      console.error("Error selecting thumbnail:", error);
     }
   };
-
-  // Function for opening image or video picker (Currently not in use)
-  const openPicker = async (selectType) => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: selectType === 'image' ? ImagePicker.MediaTypeOptions.Images : ImagePicker.MediaTypeOptions.Videos,
-      allowsMultipleSelection: true,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      // Set original assets directly
-      setForm({
-        ...form,
-        assets: result.assets, // Use original assets
-        assetType: selectType,
-      });
-    } else {
-      Alert.alert('No files selected');
-    }
-  };
-
+  
   const submit = async () => {
     if (form.galleryTitle === "") {
       return Alert.alert("Please provide a gallery title");
     }
-
+  
+    if (!form.thumbnail) {
+      return Alert.alert("Error", "Please choose a thumbnail image.");
+    }
+  
     setUploading(true);
     try {
-      // Prepare the data for gallery creation
       let galleryData = {
         title: form.galleryTitle,
         userId: user.$id,
-        assets: [], // Explicitly sending an empty array for assets to prevent backend errors
+        assets: [],
       };
-
-      // If a thumbnail is present, include it in the gallery data
+  
+      // Handle thumbnail if selected
       if (form.thumbnail) {
         const compressedImage = await ImageManipulator.manipulateAsync(
           form.thumbnail.uri,
-          [{ resize: { width: 1000 } }], // Resize to 1000px width
-          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG } // Compress to 80% quality
+          [{ resize: { width: 1000 } }],
+          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
         );
-
+  
         galleryData.thumbnail = {
           uri: compressedImage.uri,
           name: form.thumbnail.name,
@@ -99,14 +80,9 @@ const CreateGallery = () => {
           size: compressedImage.size || form.thumbnail.size,
         };
       }
-
-      // Log the data for debugging
+  
       console.log('Gallery being created:', galleryData);
-
-      // Create the gallery with the given data
       const { newGallery } = await createGallery(galleryData);
-
-      // Alert.alert("Success", "Gallery created successfully");
       router.push("/galleries");
     } catch (error) {
       Alert.alert("Error creating gallery:", error.message);
@@ -114,12 +90,12 @@ const CreateGallery = () => {
       setForm({
         galleryTitle: "",
         thumbnail: null,
-        assets: [], // Reset assets
+        assets: [],
         assetType: null,
       });
       setUploading(false);
     }
-  };
+  };  
 
   return (
     <SafeAreaView style={{ backgroundColor: '#161622', flex: 1 }}>
