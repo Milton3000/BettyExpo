@@ -8,7 +8,7 @@ export const useUploadMedia = () => {
   const [newMedia, setNewMedia] = useState([]);
   const [uploading, setUploading] = useState(false);
 
-  const openPicker = async () => {
+  const openPicker = async (galleryId, fetchGallery) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images, // Allow only images
       allowsMultipleSelection: true,
@@ -17,8 +17,12 @@ export const useUploadMedia = () => {
 
     if (!result.canceled) {
       setNewMedia(result.assets);
+
+      // Automatically trigger the upload after selecting images
+      await uploadMedia(galleryId, result.assets, fetchGallery); // Pass the galleryId here
     } else {
-      // Alert.alert('No files selected');
+      // Optional: Alert for no media selected
+      Alert.alert('No media selected');
     }
   };
 
@@ -31,15 +35,15 @@ export const useUploadMedia = () => {
     return manipResult.uri;
   };
 
-  const uploadMedia = async (galleryId, databases, config) => {
-    if (newMedia.length === 0) {
+  const uploadMedia = async (galleryId, media, fetchGallery) => {
+    if (media.length === 0) {
       return Alert.alert('No media selected to upload.');
     }
 
     setUploading(true);
 
     try {
-      const mediaUrls = await Promise.all(newMedia.map(async (media) => {
+      const mediaUrls = await Promise.all(media.map(async (media) => {
         let fileUri = media.uri;
 
         // Compress the image before uploading
@@ -63,13 +67,15 @@ export const useUploadMedia = () => {
       // Add the images to the gallery
       await addImagesToGallery(galleryId, mediaUrls);
 
-      // Alert.alert('Success', 'Images uploaded successfully!');
+      // Automatically update the gallery by calling fetchGallery() from GalleryDetails
+      fetchGallery();  // Fetch gallery directly here
+
     } catch (error) {
       console.error('Error uploading media:', error.message || error);
       Alert.alert('Error', error.message || 'Failed to upload media.');
     } finally {
       setUploading(false);
-      setNewMedia([]);
+      setNewMedia([]); // Clear the media after uploading
     }
   };
 

@@ -330,7 +330,7 @@ const GalleryDetails = () => {
           </TouchableOpacity>
         )}
 
-        {newMedia.length > 0 && (
+        {/* {newMedia.length > 0 && (
           <TouchableOpacity
             onPress={handleUploadMedia}
             disabled={uploading}
@@ -348,7 +348,7 @@ const GalleryDetails = () => {
                 : `Upload ${newMedia.length} Image${newMedia.length > 1 ? "s" : ""}`}
             </Text>
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
 
       {/* Modal for image preview */}
