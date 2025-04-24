@@ -326,8 +326,8 @@ const GalleryDetails = () => {
         {/* Upload Media Button */}
         {!isMultiSelectMode && (
           <TouchableOpacity onPress={() => openPicker(galleryId, fetchGallery)} style={{ marginBottom: 10 }}>
-  <MaterialIcons name="cloud-upload" size={40} color="white" />
-</TouchableOpacity>
+            <MaterialIcons name="cloud-upload" size={40} color="white" />
+          </TouchableOpacity>
         )}
 
         {/* {newMedia.length > 0 && (
