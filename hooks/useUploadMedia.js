@@ -39,43 +39,53 @@ export const useUploadMedia = () => {
     if (media.length === 0) {
       return Alert.alert('No media selected to upload.');
     }
-
+  
+    // Validate galleryId
+    if (!galleryId || typeof galleryId !== 'string' || galleryId.length > 36) {
+      return Alert.alert('Error', 'Invalid gallery ID');
+    }
+  
     setUploading(true);
-
+  
     try {
-      const mediaUrls = await Promise.all(media.map(async (media) => {
-        let fileUri = media.uri;
-
-        // Compress the image before uploading
-        fileUri = await compressImage(media.uri);
-
-        const fileName = media.fileName || fileUri.split('/').pop();
-        const mimeType = media.mimeType || 'image/jpeg';
-        const fileUrl = await uploadFile({
-          name: fileName,
-          uri: fileUri,
-          type: mimeType,
-        }, mimeType);
-
-        if (!fileUrl) {
-          throw new Error('File upload failed: No file URL returned');
+      const mediaUrls = [];
+      for (const item of media) {
+        try {
+          let fileUri = item.uri;
+          fileUri = await compressImage(item.uri);
+  
+          const fileName = item.fileName || fileUri.split('/').pop();
+          const mimeType = item.mimeType || 'image/jpeg';
+          const fileUrl = await uploadFile({
+            name: fileName,
+            uri: fileUri,
+            type: mimeType,
+          }, mimeType);
+  
+          if (!fileUrl) {
+            console.warn('File upload failed for:', fileName);
+            continue; // Skip to next file if upload fails
+          }
+  
+          mediaUrls.push(fileUrl);
+        } catch (error) {
+          console.error('Error uploading single file:', error);
         }
-
-        return fileUrl;
-      }));
-
-      // Add the images to the gallery
-      await addImagesToGallery(galleryId, mediaUrls);
-
-      // Automatically update the gallery by calling fetchGallery() from GalleryDetails
-      fetchGallery();  // Fetch gallery directly here
-
+      }
+  
+      if (mediaUrls.length > 0) {
+        await addImagesToGallery(galleryId, mediaUrls);
+        await fetchGallery(); // Refresh the gallery data
+      } else {
+        Alert.alert('Warning', 'No files were successfully uploaded');
+      }
+  
     } catch (error) {
-      console.error('Error uploading media:', error.message || error);
+      console.error('Error in upload process:', error);
       Alert.alert('Error', error.message || 'Failed to upload media.');
     } finally {
       setUploading(false);
-      setNewMedia([]); // Clear the media after uploading
+      setNewMedia([]);
     }
   };
 
