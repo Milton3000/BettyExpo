@@ -4,6 +4,7 @@ import { useFonts } from "expo-font";
 import { useEffect } from 'react';
 
 import GlobalProvider from "../context/GlobalProvider";
+import linking from '../linking';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,26 +26,11 @@ const RootLayout = () => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded, error]);
 
-  useEffect(() => {
-    const handleDeepLink = (event) => {
-      const url = event.url;
-      // Handle deep link URL here, e.g., by parsing and navigating
-    };
-
-    // Subscribe to deep link event
-    const subscription = Linking.addListener('url', handleDeepLink);
-
-    // Unsubscribe from deep link event when component unmounts
-    return () => {
-      Linking.removeAllListeners('url');
-    };
-  }, []);
-
   if (!fontsLoaded && !error) return null;
 
   return (
     <GlobalProvider>
-      <Stack>
+<Stack linking={linking}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
